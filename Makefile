@@ -5,7 +5,7 @@
 # © 2008-2010 Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 # Licensed under GPL v3 or later
 
-MONKEYSPHERE_VERSION = `head -n1 Changelog | sed 's/.*(\([^-]*\)).*/\1/'`
+MONKEYSPHERE_VERSION:=$(shell head -n1 Changelog | sed 's/.*(\([^-]*\)).*/\1/')
 
 # these defaults are for debian.  porters should probably adjust them
 # before calling make install
@@ -17,14 +17,8 @@ MANPREFIX ?= $(PREFIX)/share/man
 # nothing actually needs to be built now.
 all: 
 
-tarball: clean
-	rm -rf monkeysphere-$(MONKEYSPHERE_VERSION)
-	ln -s ../Changelog ../COPYING ../etc ../Makefile ../man ../src ../tests monkeysphere-$(MONKEYSPHERE_VERSION)
-	echo Monkeysphere $(MONKEYSPHERE_VERSION) > monkeysphere-$(MONKEYSPHERE_VERSION)/VERSION
-	echo -n "git revision " >> monkeysphere-$(MONKEYSPHERE_VERSION)/VERSION
-	git rev-parse HEAD >> monkeysphere-$(MONKEYSPHERE_VERSION)/VERSION
-	tar -ch --exclude='*~' monkeysphere-$(MONKEYSPHERE_VERSION) | gzip -n > monkeysphere_$(MONKEYSPHERE_VERSION).orig.tar.gz
-	rm -rf monkeysphere-$(MONKEYSPHERE_VERSION)
+VERSION: Changelog
+	sed 's/^Monkeysphere .*$$/Monkeysphere '$(MONKEYSPHERE_VERSION)'/' -i VERSION
 
 debian-package:
 	git buildpackage -uc -us --git-upstream-branch=master --git-debian-branch=debian --git-no-pristine-tar --git-ignore-new
