@@ -19,8 +19,6 @@ all:
 
 tarball: clean
 	rm -rf monkeysphere-$(MONKEYSPHERE_VERSION)
-	mkdir -p monkeysphere-$(MONKEYSPHERE_VERSION)/doc
-	ln -s ../../website/getting-started-user.mdwn ../../website/getting-started-admin.mdwn ../../doc/TODO ../../doc/MonkeySpec monkeysphere-$(MONKEYSPHERE_VERSION)/doc
 	ln -s ../Changelog ../COPYING ../etc ../Makefile ../man ../src ../tests monkeysphere-$(MONKEYSPHERE_VERSION)
 	echo Monkeysphere $(MONKEYSPHERE_VERSION) > monkeysphere-$(MONKEYSPHERE_VERSION)/VERSION
 	echo -n "git revision " >> monkeysphere-$(MONKEYSPHERE_VERSION)/VERSION
@@ -28,11 +26,8 @@ tarball: clean
 	tar -ch --exclude='*~' monkeysphere-$(MONKEYSPHERE_VERSION) | gzip -n > monkeysphere_$(MONKEYSPHERE_VERSION).orig.tar.gz
 	rm -rf monkeysphere-$(MONKEYSPHERE_VERSION)
 
-debian-package: tarball
-	tar xzf monkeysphere_$(MONKEYSPHERE_VERSION).orig.tar.gz
-	cp -a packaging/debian monkeysphere-$(MONKEYSPHERE_VERSION)
-	(cd monkeysphere-$(MONKEYSPHERE_VERSION) && debuild -uc -us)
-	rm -rf monkeysphere-$(MONKEYSPHERE_VERSION)
+debian-package:
+	git buildpackage -uc -us --git-upstream-branch=master --git-debian-branch=debian --git-no-pristine-tar --git-ignore-new
 
 # don't explicitly depend on the tarball, since our tarball
 # (re)generation is not idempotent even when no source changes.
@@ -67,7 +62,6 @@ install: all installman
 	install -m 0644 src/share/m/* $(DESTDIR)$(PREFIX)/share/monkeysphere/m
 	install -m 0644 src/share/mh/* $(DESTDIR)$(PREFIX)/share/monkeysphere/mh
 	install -m 0644 src/share/ma/* $(DESTDIR)$(PREFIX)/share/monkeysphere/ma
-	install doc/* $(DESTDIR)$(PREFIX)/share/doc/monkeysphere
 	install Changelog $(DESTDIR)$(PREFIX)/share/doc/monkeysphere
 	install -m 0644 etc/monkeysphere.conf $(DESTDIR)$(ETCPREFIX)/etc/monkeysphere/monkeysphere.conf$(ETCSUFFIX)
 	install -m 0644 etc/monkeysphere-host.conf $(DESTDIR)$(ETCPREFIX)/etc/monkeysphere/monkeysphere-host.conf$(ETCSUFFIX)
