@@ -1,8 +1,12 @@
 monkeysphere (0.30~pre-1) UNRELEASED; urgency=low
 
+  [ Daniel Kahn Gillmor]
   * New upstream release
   * Move to git buildpackage
   * Specify source format 3.0 (quilt)
+
+  [ Micah Anderson ]
+  * Remove duplicate Changelog install
 
  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 23 Mar 2010 13:59:26 -0400
 
