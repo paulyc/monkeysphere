@@ -1,14 +1,16 @@
-monkeysphere (0.30~pre-1) UNRELEASED; urgency=low
+monkeysphere (0.30-1) unstable; urgency=low
 
   [ Daniel Kahn Gillmor]
   * New upstream release
+   - handles lack of openssh utilities gracefully
+  * moved openssh-client from Depends: to Recommends: (Closes: #574170)
   * Move to git buildpackage
   * Specify source format 3.0 (quilt)
 
   [ Micah Anderson ]
   * Remove duplicate Changelog install
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 23 Mar 2010 13:59:26 -0400
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sat, 17 Apr 2010 20:42:11 -0400
 
 monkeysphere (0.29-1) unstable; urgency=low
 

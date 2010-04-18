@@ -2,8 +2,8 @@ Source: monkeysphere
 Section: net
 Priority: extra
 Maintainer: Jameson Rollins <jrollins@finestructure.net>
-Uploaders:  Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Build-Depends: debhelper (>= 7.0),
+Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Build-Depends: debhelper (>= 7.0.50~),
  cpio,
  socat,
  openssh-server,
@@ -20,14 +20,17 @@ Dm-Upload-Allowed: yes
 
 Package: monkeysphere
 Architecture: all
-Depends: openssh-client,
+Depends:
  gnupg,
  libcrypt-openssl-rsa-perl,
  libdigest-sha-perl,
  lockfile-progs | procmail,
  adduser,
  ${misc:Depends}
-Recommends: netcat | socat, ssh-askpass, cron
+Recommends: netcat | socat,
+ ssh-askpass,
+ cron,
+ openssh-client
 Suggests: monkeysphere-validation-agent
 Enhances: openssh-client, openssh-server
 Description: leverage the OpenPGP web of trust for SSH and TLS authentication
