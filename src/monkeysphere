@@ -68,18 +68,7 @@ gpg_user() {
 # output the ssh fingerprint of a gpg key
 gpg_ssh_fingerprint() {
     keyid="$1"
-    local tmpfile=$(msmktempfile)
-
-    # trap to remove tmp file if break
-    trap "rm -f $tmpfile" EXIT
-
-    # use temporary file, since ssh-keygen won't accept keys on stdin
-    gpg_user --export "$keyid" --no-armor | openpgp2ssh "$keyid" >"$tmpfile"
-    ssh-keygen -l -f "$tmpfile" | awk '{ print $1, $2, $4 }'
-
-    # remove the tmp file
-    trap - EXIT
-    rm -rf "$tmpfile"
+    gpg_user --export "$keyid" --no-armor | "$SYSSHAREDIR/keytrans" openpgp2sshfpr "$keyid"
 }
 
 # take a secret key ID and check that only zero or one ID is provided,
@@ -283,17 +272,7 @@ case $COMMAND in
 
     'sshfprs-for-userid')
 	CHECK_KEYSERVER=${MONKEYSPHERE_CHECK_KEYSERVER:=${CHECK_KEYSERVER:="true"}}
-        keytmpdir=$(msmktempdir)
-        # use a file named " " to avoid arbitrary non-whitespace text
-        # in the fingerprint output
-        keytmpfile="$keytmpdir/ "
-        cd "$keytmpdir"
-	keys_for_userid "$@" | while read KEYLINE ; do
-            printf '%s\n' "$KEYLINE" > "$keytmpdir/ "
-            ssh-keygen -l -f ' '
-        done
-        rm -f "$keytmpfile"
-        rmdir "$keytmpdir"
+	keys_for_userid "$@" | "$SYSSHAREDIR/keytrans" sshfpr
 	;;
 
     'keys-from-userid')
