@@ -1,10 +1,10 @@
-monkeysphere (0.31~pre-1) UNRELEASED; urgency=low
+monkeysphere (0.31-1) unstable; urgency=low
 
   * New Upstream Release
   * updated Xsession.d script to avoid choking when
     /etc/monkeysphere/monkeysphere.conf has been removed.
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 06 May 2010 11:25:30 -0400
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 15 Jul 2010 19:22:11 -0400
 
 monkeysphere (0.30-1) unstable; urgency=low
 
