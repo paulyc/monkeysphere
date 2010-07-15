@@ -42,6 +42,7 @@ install: all installman
 	printf "Monkeysphere %s\n" $(MONKEYSPHERE_VERSION) > $(DESTDIR)$(PREFIX)/share/monkeysphere/VERSION
 	install src/monkeysphere $(DESTDIR)$(PREFIX)/bin
 	install src/monkeysphere-host src/monkeysphere-authentication $(DESTDIR)$(PREFIX)/sbin
+	install src/monkeysphere-authentication-keys-for-user $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 src/share/common $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 src/share/defaultenv $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0755 src/share/checkperms $(DESTDIR)$(PREFIX)/share/monkeysphere
@@ -53,7 +54,9 @@ install: all installman
 	install -m 0644 src/share/m/* $(DESTDIR)$(PREFIX)/share/monkeysphere/m
 	install -m 0644 src/share/mh/* $(DESTDIR)$(PREFIX)/share/monkeysphere/mh
 	install -m 0644 src/share/ma/* $(DESTDIR)$(PREFIX)/share/monkeysphere/ma
-	install Changelog $(DESTDIR)$(PREFIX)/share/doc/monkeysphere
+	install -m 0644 Changelog $(DESTDIR)$(PREFIX)/share/doc/monkeysphere
+	install -d $(DESTDIR)$(PREFIX)/share/doc/monkeysphere/examples
+	install -m 0644 examples/* $(DESTDIR)$(PREFIX)/share/doc/monkeysphere/examples
 	install -m 0644 etc/monkeysphere.conf $(DESTDIR)$(ETCPREFIX)/etc/monkeysphere/monkeysphere.conf$(ETCSUFFIX)
 	install -m 0644 etc/monkeysphere-host.conf $(DESTDIR)$(ETCPREFIX)/etc/monkeysphere/monkeysphere-host.conf$(ETCSUFFIX)
 	install -m 0644 etc/monkeysphere-authentication.conf $(DESTDIR)$(ETCPREFIX)/etc/monkeysphere/monkeysphere-authentication.conf$(ETCSUFFIX)

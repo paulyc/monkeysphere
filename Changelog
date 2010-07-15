@@ -1,13 +1,19 @@
-monkeysphere (0.31~pre) UNRELEASED; urgency=low
+monkeysphere (0.31) unstable; urgency=low
 
+  [ Daniel Kahn Gillmor ]
   * support x509 anchors for monkeysphere-host, allow shared anchor
     between m-h and m-a (closes MS #2288)
   * do not bail or fail on m-h publish-key if the admin interactively
     declines to publish one of the keys key (closes MS #1945)
   * report updated expiration date upon successful conclusion of m-h
     set-expire (closes MS #2291)
+  * added some files in examples/ to demonstrate system integration
+    with OpenSSH
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 06 May 2010 11:23:38 -0400
+  [ Jameson Rollins ]
+  * add keys-for-user subcommand to monkeysphere-authentication
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 15 Jul 2010 19:20:35 -0400
 
 monkeysphere (0.30) unstable; urgency=low
 
