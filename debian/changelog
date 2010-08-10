@@ -1,3 +1,10 @@
+monkeysphere (0.31-2~pre) UNRELEASED; urgency=low
+
+  * fix X11 session initialization script for systems with dash as /bin/sh
+    (resolves MS #2471)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 10 Aug 2010 14:07:45 -0400
+
 monkeysphere (0.31-1) unstable; urgency=low
 
   * New Upstream Release
