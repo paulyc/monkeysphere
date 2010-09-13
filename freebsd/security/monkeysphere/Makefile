@@ -6,7 +6,7 @@
 #
 
 PORTNAME=	monkeysphere
-PORTVERSION=   0.26
+PORTVERSION=   0.31
 CATEGORIES=	security
 MASTER_SITES=	http://archive.monkeysphere.info/debian/pool/monkeysphere/m/monkeysphere/
 # hack for debian orig tarballs
@@ -31,24 +31,28 @@ GROUPS=		monkeysphere
 
 MAKE_ARGS=	ETCPREFIX=${PREFIX} MANPREFIX=${PREFIX}/man ETCSUFFIX=.sample
 
+MONKEYSPHERE_DBDIR?=	/var/monkeysphere
+
 # use proper system paths for FreeBSD instead of debian's:
 post-patch:
-	@${REINPLACE_CMD} -e 's|/etc/monkeysphere|/usr/local/etc/monkeysphere|g' \
+	@${REINPLACE_CMD} -e 's|/etc/monkeysphere|${PREFIX}/etc/monkeysphere|g' \
 	  ${WRKSRC}/src/share/defaultenv \
 	  ${WRKSRC}/src/transitions/0.23 \
+	  ${WRKSRC}/src/transitions/0.28 \
+	  ${WRKSRC}/tests/basic \
 	  ${WRKSRC}/man/man1/monkeysphere.1 \
 	  ${WRKSRC}/man/man8/monkeysphere-authentication.8 \
 	  ${WRKSRC}/man/man8/monkeysphere-host.8 \
 	  ${WRKSRC}/etc/monkeysphere-authentication.conf
-	@${REINPLACE_CMD} -e 's|/var/lib/monkeysphere|/var/monkeysphere|g' \
+	@${REINPLACE_CMD} -e 's|/var/lib/monkeysphere|${MONKEYSPHERE_DBDIR}|g' \
 	  ${WRKSRC}/src/transitions/0.23 \
+	  ${WRKSRC}/src/transitions/0.28 \
 	  ${WRKSRC}/man/man1/monkeysphere.1 \
 	  ${WRKSRC}/man/man8/monkeysphere-authentication.8 \
 	  ${WRKSRC}/man/man8/monkeysphere-host.8 \
 	  ${WRKSRC}/src/monkeysphere-host \
 	  ${WRKSRC}/src/monkeysphere-authentication \
-	  ${WRKSRC}/doc/getting-started-admin.mdwn
-	@${REINPLACE_CMD} -e 's|/usr/share/monkeysphere|/usr/local/share/monkeysphere|g' \
+	@${REINPLACE_CMD} -e 's|/usr/share/monkeysphere|${PREFIX}/share/monkeysphere|g' \
 	  ${WRKSRC}/src/monkeysphere-host \
 	  ${WRKSRC}/src/monkeysphere-authentication \
 	  ${WRKSRC}/src/monkeysphere
