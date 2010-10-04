@@ -1,4 +1,4 @@
-monkeysphere (0.32-1) unstable; urgency=low
+monkeysphere (0.32-1) experimental; urgency=low
 
   * New upstream release
   * remove the etc/X11/Xsession.d/70monkeysphere_use-validation-agent
