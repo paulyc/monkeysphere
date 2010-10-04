@@ -1,3 +1,26 @@
+monkeysphere (0.32) unstable; urgency=low
+
+  [ Jameson Rollins ]
+  * Fix specification of install paths in all scripts and man pages
+    (closes MS #2491)
+  * Fix need for single argument to gpg_sphere (thanks Clint)
+    (closes MS #442)
+  * specify LC_ALL=C for all gpg calls
+    (closes MS #2496)
+
+  [ Micah Anderson ]
+  * fix monkeysphere-host revoke-key, which never worked properly :(
+  * add some debug output to monkeysphere-host publish-key
+    (closes MS #2289)
+  
+  [ Clint Adams ]
+  * add support for options to the authorized User IDs file.  Options that
+    should apply to keys for a given User ID should be on
+    whitespace-prefixed lines immediately following that User ID.
+    (closes MS #440)
+
+ -- Jameson Rollins <jrollins@finestructure.net>  Mon, 04 Oct 2010 00:36:08 -0400
+
 monkeysphere (0.31) unstable; urgency=low
 
   [ Daniel Kahn Gillmor ]

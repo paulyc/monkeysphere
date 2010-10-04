@@ -13,6 +13,7 @@ ETCPREFIX ?=
 ETCSUFFIX ?= 
 PREFIX ?= /usr
 MANPREFIX ?= $(PREFIX)/share/man
+LOCALSTATEDIR ?= /var/lib
 
 # nothing actually needs to be built now.
 all: 
@@ -41,15 +42,23 @@ install: all installman
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/monkeysphere
 	printf "Monkeysphere %s\n" $(MONKEYSPHERE_VERSION) > $(DESTDIR)$(PREFIX)/share/monkeysphere/VERSION
 	install src/monkeysphere $(DESTDIR)$(PREFIX)/bin
-	install src/monkeysphere-host src/monkeysphere-authentication $(DESTDIR)$(PREFIX)/sbin
+	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/bin/monkeysphere
+	install src/monkeysphere-host $(DESTDIR)$(PREFIX)/sbin
+	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/sbin/monkeysphere-host
+	install src/monkeysphere-authentication $(DESTDIR)$(PREFIX)/sbin
+	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/sbin/monkeysphere-authentication
 	install src/monkeysphere-authentication-keys-for-user $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 src/share/common $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 src/share/defaultenv $(DESTDIR)$(PREFIX)/share/monkeysphere
+	sed -i 's:__SYSCONFDIR_PREFIX__:$(ETCPREFIX):' $(DESTDIR)$(PREFIX)/share/monkeysphere/defaultenv
+	sed -i 's:__SYSDATADIR_PREFIX__:$(LOCALSTATEDIR):' $(DESTDIR)$(PREFIX)/share/monkeysphere/defaultenv
 	install -m 0755 src/share/checkperms $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0755 src/share/keytrans $(DESTDIR)$(PREFIX)/share/monkeysphere
-	ln -s ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/pem2openpgp
-	ln -s ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2ssh
+	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/pem2openpgp
+	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2ssh
 	install -m 0744 src/transitions/* $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions
+	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions/0.23
+	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions/0.28
 	install -m 0644 src/transitions/README.txt $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions
 	install -m 0644 src/share/m/* $(DESTDIR)$(PREFIX)/share/monkeysphere/m
 	install -m 0644 src/share/mh/* $(DESTDIR)$(PREFIX)/share/monkeysphere/mh
@@ -68,6 +77,17 @@ installman:
 	install man/man7/* $(DESTDIR)$(MANPREFIX)/man7
 	install man/man8/* $(DESTDIR)$(MANPREFIX)/man8
 	gzip -d man/*/*
+	gzip -d $(DESTDIR)$(MANPREFIX)/man1/monkeysphere.1.gz
+	sed -i 's:__SYSCONFDIR_PREFIX__:$(ETCPREFIX):' $(DESTDIR)$(MANPREFIX)/man1/monkeysphere.1
+	gzip -n $(DESTDIR)$(MANPREFIX)/man1/monkeysphere.1
+	gzip -d $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-host.8.gz
+	sed -i 's:__SYSCONFDIR_PREFIX__:$(ETCPREFIX):' $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-host.8
+	sed -i 's:__SYSDATADIR_PREFIX__:$(LOCALSTATEDIR):' $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-host.8
+	gzip -n $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-host.8
+	gzip -d $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-authentication.8.gz
+	sed -i 's:__SYSCONFDIR_PREFIX__:$(ETCPREFIX):' $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-authentication.8
+	sed -i 's:__SYSDATADIR_PREFIX__:$(LOCALSTATEDIR):' $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-authentication.8
+	gzip -n $(DESTDIR)$(MANPREFIX)/man8/monkeysphere-authentication.8
 
 releasenote:
 	./utils/build-releasenote

@@ -16,7 +16,7 @@ set -e
 
 PGRM=$(basename $0)
 
-SYSSHAREDIR=${MONKEYSPHERE_SYSSHAREDIR:-"/usr/share/monkeysphere"}
+SYSSHAREDIR=${MONKEYSPHERE_SYSSHAREDIR:-"__SYSSHAREDIR_PREFIX__/share/monkeysphere"}
 export SYSSHAREDIR
 . "${SYSSHAREDIR}/defaultenv"
 . "${SYSSHAREDIR}/common"
@@ -62,7 +62,7 @@ EOF
 
 # user gpg command to define common options
 gpg_user() {
-    gpg --no-greeting --quiet --no-tty "$@"
+    LC_ALL=C gpg --no-greeting --quiet --no-tty "$@"
 }
 
 # output the ssh fingerprint of a gpg key
