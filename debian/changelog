@@ -1,9 +1,10 @@
-monkeysphere (0.31-2~pre) UNRELEASED; urgency=low
+monkeysphere (0.32-1) unstable; urgency=low
 
-  * fix X11 session initialization script for systems with dash as /bin/sh
-    (resolves MS #2471)
+  * New upstream release
+  * remove the etc/X11/Xsession.d/70monkeysphere_use-validation-agent
+    script, since msva will now be handling that itself.
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 10 Aug 2010 14:07:45 -0400
+ -- Jameson Rollins <jrollins@finestructure.net>  Mon, 04 Oct 2010 02:14:05 -0400
 
 monkeysphere (0.31-1) unstable; urgency=low
 
