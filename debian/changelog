@@ -4,7 +4,7 @@ monkeysphere (0.32-1) experimental; urgency=low
   * remove the etc/X11/Xsession.d/70monkeysphere_use-validation-agent
     script, since msva will now be handling that itself.
 
- -- Jameson Rollins <jrollins@finestructure.net>  Mon, 04 Oct 2010 02:14:05 -0400
+ -- Jameson Rollins <jrollins@finestructure.net>  Wed, 06 Oct 2010 17:42:01 -0400
 
 monkeysphere (0.31-1) unstable; urgency=low
 
