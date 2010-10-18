@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 7.0.50~),
  cpio,
  socat,
  openssh-server,
- gnupg,
+ gnupg (>= 1.4.10),
  libcrypt-openssl-rsa-perl,
  libdigest-sha-perl,
  lockfile-progs | procmail,
@@ -21,7 +21,7 @@ Dm-Upload-Allowed: yes
 Package: monkeysphere
 Architecture: all
 Depends:
- gnupg,
+ gnupg (>= 1.4.10),
  libcrypt-openssl-rsa-perl,
  libdigest-sha-perl,
  lockfile-progs | procmail,

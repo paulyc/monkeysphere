@@ -1,3 +1,10 @@
+monkeysphere (0.33-2~pre) experimental; urgency=low
+
+  * updated build-deps and depends to be versioned on gnupg 1.4.10 or
+    later.
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Mon, 18 Oct 2010 12:56:52 -0400
+
 monkeysphere (0.33-1) experimental; urgency=low
 
   * New upstream release (Closes: #600304, #591118)
