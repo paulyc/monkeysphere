@@ -17,6 +17,7 @@ local returnCode=0
 local unames
 local uname
 local authorizedKeysDir
+local tmpAuthorizedKeys
 local authorizedUserIDs
 
 if [ "$1" ] ; then
@@ -57,19 +58,14 @@ for uname in $unames ; do
     # trap to delete temporary directory on exit
     trap "rm -rf $TMPLOC" EXIT
 
-    # create temporary authorized_user_ids file
-    TMP_AUTHORIZED_USER_IDS="${TMPLOC}/authorized_user_ids"
-    touch "$TMP_AUTHORIZED_USER_IDS"
-
      # create temporary authorized_keys file
-    AUTHORIZED_KEYS="${TMPLOC}/authorized_keys"
-    touch "$AUTHORIZED_KEYS"
+    tmpAuthorizedKeys="${TMPLOC}/authorized_keys"
+    touch "$tmpAuthorizedKeys"
 
     # set restrictive permissions on the temporary files
     # FIXME: is there a better way to do this?
     chmod 0700 "$TMPLOC"
-    chmod 0600 "$AUTHORIZED_KEYS"
-    chmod 0600 "$TMP_AUTHORIZED_USER_IDS"
+    chmod 0600 "$tmpAuthorizedKeys"
     chown -R "$MONKEYSPHERE_USER" "$TMPLOC"
 
     # process authorized_user_ids file
@@ -77,21 +73,16 @@ for uname in $unames ; do
     # translating ssh-style path variables
     authorizedUserIDs=$(translate_ssh_variables "$uname" "$AUTHORIZED_USER_IDS")
     if [ -s "$authorizedUserIDs" ] ; then
-	log debug "authorized_user_ids file found."
 	# check permissions on the authorized_user_ids file path
 	if check_key_file_permissions "$uname" "$authorizedUserIDs" ; then
-            # copy user authorized_user_ids file to temporary
-            # location
-	    cat "$authorizedUserIDs" > "$TMP_AUTHORIZED_USER_IDS"
-
-	    # export needed variables
-	    export AUTHORIZED_KEYS
-	    export TMP_AUTHORIZED_USER_IDS
+	    log verbose "processing authorized_user_ids..."
 
 	    # process authorized_user_ids file, as monkeysphere user
 	    su_monkeysphere_user \
-		". ${SYSSHAREDIR}/common; STRICT_MODES='$STRICT_MODES' process_authorized_user_ids $TMP_AUTHORIZED_USER_IDS" \
-		|| returnCode="$?"
+		". ${SYSSHAREDIR}/common; STRICT_MODES='$STRICT_MODES' process_authorized_user_ids -" \
+		< "$authorizedUserIDs" \
+		> "$tmpAuthorizedKeys"
+
 	else
 	    log debug "not processing authorized_user_ids."
 	fi
@@ -107,10 +98,12 @@ for uname in $unames ; do
 	if [ -s "$rawAuthorizedKeys" ] ; then
 	    # check permissions on the authorized_keys file path
 	    if check_key_file_permissions "$uname" "$rawAuthorizedKeys" ; then
-		log verbose "adding raw authorized_keys file... "
-		cat "$rawAuthorizedKeys" >> "$AUTHORIZED_KEYS"
+		log verbose "adding raw authorized_keys..."
+
+		cat "$rawAuthorizedKeys" >> "$tmpAuthorizedKeys"
+
 	    else
-		log debug "not adding raw authorized_keys file."		
+		log debug "not adding raw authorized_keys."
 	    fi
 	else
 	    log debug "empty or absent authorized_keys file."
@@ -118,7 +111,7 @@ for uname in $unames ; do
     fi
 
     # move the new authorized_keys file into place
-    if [ -s "$AUTHORIZED_KEYS" ] ; then
+    if [ -s "$tmpAuthorizedKeys" ] ; then
 	# openssh appears to check the contents of the authorized_keys
 	# file as the user in question, so the file must be readable
 	# by that user at least.
@@ -129,17 +122,23 @@ for uname in $unames ; do
 	# the same uid that sshd is launched as); change the group of
 	# the file so that members of the user's group can read it.
 
-	# FIXME: is there a better way to do this?
-	chown $(whoami) "$AUTHORIZED_KEYS" && \
-	    chgrp $(id -g "$uname") "$AUTHORIZED_KEYS" && \
-	    chmod g+r "$AUTHORIZED_KEYS" && \
-	    mv -f "$AUTHORIZED_KEYS" "${authorizedKeysDir}/${uname}" || \
-	    { 
-	    log error "Failed to install authorized_keys for '$uname'!"
-	    rm -f "${authorizedKeysDir}/${uname}"
-	    # indicate that there has been a failure:
-	    returnCode=1
-	}
+	if [ "$OUTPUT_STDOUT" ] ; then
+	    log debug "outputting keys to stdout..."
+	    cat "$tmpAuthorizedKeys"
+	else
+	    log debug "moving new file to ${authorizedKeysDir}/${uname}..."
+	    # FIXME: is there a better way to do this?
+	    chown $(whoami) "$tmpAuthorizedKeys" && \
+		chgrp $(id -g "$uname") "$tmpAuthorizedKeys" && \
+		chmod g+r "$tmpAuthorizedKeys" && \
+		mv -f "$tmpAuthorizedKeys" "${authorizedKeysDir}/${uname}" || \
+		{
+		log error "Failed to install authorized_keys for '$uname'!"
+		rm -f "${authorizedKeysDir}/${uname}"
+		# indicate that there has been a failure:
+		returnCode=1
+	    }
+	fi
     else
 	rm -f "${authorizedKeysDir}/${uname}"
     fi

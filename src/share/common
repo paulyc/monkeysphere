@@ -325,61 +325,35 @@ passphrase_prompt() {
 # remove all lines with specified string from specified file
 remove_line() {
     local file
-    local string
+    local lines
     local tempfile
 
     file="$1"
-    string="$2"
-
-    if [ -z "$file" -o -z "$string" ] ; then
-	return 1
-    fi
+    shift
 
     if [ ! -e "$file" ] ; then
 	return 1
     fi
 
-    # if the string is in the file...
-    if grep -q -F "$string" "$file" 2>/dev/null ; then
+    if (($# == 1)) ; then
+	lines=$(grep -F "$1" "$file") || true
+    else
+	lines=$(grep -F "$1" "$file" | grep -F "$2") || true
+    fi
+
+    # if the string was found, remove it
+    if [ "$lines" ] ; then
+	log debug "removing matching key lines..."
 	tempfile=$(mktemp "${file}.XXXXXXX") || \
 	    failure "Unable to make temp file '${file}.XXXXXXX'"
-	
-	# remove the line with the string, and return 0
-	grep -v -F "$string" "$file" >"$tempfile"
-	cat "$tempfile" > "$file"
-	rm "$tempfile"
-	return 0
-    # otherwise return 1
-    else
-	return 1
+	grep -v -x -F "$lines" "$file" >"$tempfile"
+	mv -f "$tempfile" "$file"
     fi
 }
 
-# remove all lines with MonkeySphere strings in file
+# remove all lines with MonkeySphere strings from stdin
 remove_monkeysphere_lines() {
-    local file
-    local tempfile
-
-    file="$1"
-
-    # return error if file does not exist
-    if [ ! -e "$file" ] ; then
-	return 1
-    fi
-
-    # just return ok if the file is empty, since there aren't any
-    # lines to remove
-    if [ ! -s "$file" ] ; then
-	return 0
-    fi
-
-    tempfile=$(mktemp "${file}.XXXXXXX") || \
-	failure "Could not make temporary file '${file}.XXXXXXX'."
-
-    egrep -v '^MonkeySphere[[:digit:]]{4}(-[[:digit:]]{2}){2}T[[:digit:]]{2}(:[[:digit:]]{2}){2}$' \
-	"$file" >"$tempfile"
-    cat "$tempfile" > "$file"
-    rm "$tempfile"
+    egrep -v ' MonkeySphere[[:digit:]]{4}(-[[:digit:]]{2}){2}T[[:digit:]]{2}(:[[:digit:]]{2}){2} '
 }
 
 # translate ssh-style path variables %h and %u
@@ -404,6 +378,23 @@ translate_ssh_variables() {
 # test that a string to conforms to GPG's expiration format
 test_gpg_expire() {
     echo "$1" | egrep -q "^[0-9]+[mwy]?$"
+}
+
+# touch a key file if it doesn't exist, including creating needed
+# directories with correct permissions
+touch_key_file_or_fail() {
+    local keyFile="$1"
+    if [ ! -f "$keyFile" ]; then
+	# make sure to create files and directories with the
+	# appropriate write bits turned off:
+	newUmask=$(printf "%04o" $(( 0$(umask) | 0022 )) )
+	[ -d $(dirname "$keyFile") ] \
+	    || (umask "$newUmask" && mkdir -p -m 0700 $(dirname "$keyFile") ) \
+	    || failure "Could not create path to $keyFile"
+	# make sure to create this file with the appropriate bits turned off:
+	(umask "$newUmask" && touch "$keyFile") \
+	    || failure "Unable to create $keyFile"
+    fi
 }
 
 # check that a file is properly owned, and that all it's parent
@@ -505,14 +496,13 @@ ssh2known_hosts() {
 
 # output authorized_keys line from ssh key
 ssh2authorized_keys() {
-    local koptions="$1"
-    local userID="$2"
-    local key="$3"
+    local userID="$1"
+    local key="$2"
 
-    if [[ -z "$koptions" ]]; then
-        printf "%s MonkeySphere%s %s\n" "$key" "$DATE" "$userID"
+    if [[ "$AUTHORIZED_KEYS_OPTIONS" ]]; then
+        printf "%s %s MonkeySphere%s %s\n" "$AUTHORIZED_KEYS_OPTIONS" "$key" "$DATE" "$userID"
     else
-        printf "%s %s MonkeySphere%s %s\n" "$koptions" "$key" "$DATE" "$userID"
+	printf "%s MonkeySphere%s %s\n" "$key" "$DATE" "$userID"
     fi
 }
 
@@ -787,442 +777,120 @@ process_user_id() {
     # being processed in the key files over "bad" keys (key flag '1')
 }
 
-# output all valid keys for specified user ID literal
-keys_for_userid() {
-    local userID
-    local noKey=
-    local nKeys
-    local nKeysOK
+process_keys_for_file() {
+    local keyFile="$1"
+    local userID="$2"
+    local host
     local ok
     local sshKey
-    local tmpfile
-
-    userID="$1"
 
     log verbose "processing: $userID"
-
-    nKeys=0
-    nKeysOK=0
-
-    IFS=$'\n'
-    for line in $(process_user_id "${userID}") ; do
-	# note that key was found
-	nKeys=$((nKeys+1))
-
-	ok=$(echo "$line" | cut -d: -f1)
-	sshKey=$(echo "$line" | cut -d: -f2)
-
-        if [ -z "$sshKey" ] ; then
-            continue
-        fi
-
-	# if key OK, output key to stdout
-	if [ "$ok" -eq '0' ] ; then
-	    # note that key was found ok
-	    nKeysOK=$((nKeysOK+1))
-
-	    printf '%s\n' "$sshKey"
-	fi
-    done
-
-    # if at least one key was found...
-    if [ "$nKeys" -gt 0 ] ; then
-	# if ok keys were found, return 0
-	if [ "$nKeysOK" -gt 0 ] ; then
-	    return 0
-	# else return 2
-	else
-	    return 2
-	fi
-    # if no keys were found, return 1
-    else
-	return 1
-    fi
-}
-
-# process a single host in the known_host file
-process_host_known_hosts() {
-    local host
-    local userID
-    local noKey=
-    local nKeys
-    local nKeysOK
-    local ok
-    local sshKey
-    local tmpfile
-
-    # set the key processing mode
-    export REQUIRED_KEY_CAPABILITY="$REQUIRED_HOST_KEY_CAPABILITY"
-
-    host="$1"
-    userID="ssh://${host}"
-
-    log verbose "processing: $host"
-
-    nKeys=0
-    nKeysOK=0
-
-    IFS=$'\n'
-    for line in $(process_user_id "${userID}") ; do
-	# note that key was found
-	nKeys=$((nKeys+1))
-
-	ok=$(echo "$line" | cut -d: -f1)
-	sshKey=$(echo "$line" | cut -d: -f2)
-
-        if [ -z "$sshKey" ] ; then
-            continue
-        fi
-
-	# remove any old host key line, and note if removed nothing is
-	# removed
-	remove_line "$KNOWN_HOSTS" "$sshKey" || noKey=true
-
-	# if key OK, add new host line
-	if [ "$ok" -eq '0' ] ; then
-	    # note that key was found ok
-	    nKeysOK=$((nKeysOK+1))
-
-	    # hash if specified
-	    if [ "$HASH_KNOWN_HOSTS" = 'true' ] ; then
-                if (type ssh-keygen >/dev/null) ; then
-		# FIXME: this is really hackish cause ssh-keygen won't
-		# hash from stdin to stdout
-		    tmpfile=$(mktemp ${TMPDIR:-/tmp}/tmp.XXXXXXXXXX)
-		    ssh2known_hosts "$host" "$sshKey" > "$tmpfile"
-		    ssh-keygen -H -f "$tmpfile" 2>/dev/null
-		    cat "$tmpfile" >> "$KNOWN_HOSTS"
-		    rm -f "$tmpfile" "${tmpfile}.old"
-                else
-       # FIXME: we could do this without needing ssh-keygen.  hashed
-       # known_hosts looks like: |1|X|Y where 1 means SHA1 (nothing
-       # else is defined in openssh sources), X is the salt (same
-       # length as the digest output), base64-encoded, and Y is the
-       # digested hostname (also base64-encoded).
-
-       # see hostfile.{c,h} in openssh sources.
-
-                    failure "Cannot hash known_hosts as requested"
-                fi
-	    else
-		ssh2known_hosts "$host" "$sshKey" >> "$KNOWN_HOSTS"
-	    fi
-
-	    # log if this is a new key to the known_hosts file
-	    if [ "$noKey" ] ; then
-		log info "* new key for $host added to known_hosts file."
-	    fi
-	fi
-    done
-
-    # if at least one key was found...
-    if [ "$nKeys" -gt 0 ] ; then
-	# if ok keys were found, return 0
-	if [ "$nKeysOK" -gt 0 ] ; then
-	    return 0
-	# else return 2
-	else
-	    return 2
-	fi
-    # if no keys were found, return 1
-    else
-	return 1
-    fi
-}
-
-# update the known_hosts file for a set of hosts listed on command
-# line
-update_known_hosts() {
-    local returnCode=0
-    local nHosts
-    local nHostsOK
-    local nHostsBAD
-    local fileCheck
-    local host
-    local newUmask
-
-    # the number of hosts specified on command line
-    nHosts="$#"
-
-    nHostsOK=0
-    nHostsBAD=0
-
-    # touch the known_hosts file so that the file permission check
-    # below won't fail upon not finding the file
-    if [ ! -f "$KNOWN_HOSTS" ]; then
-	# make sure to create any files or directories with the appropriate write bits turned off:
-	newUmask=$(printf "%04o" $(( 0$(umask) | 0022 )) )
-	[ -d $(dirname "$KNOWN_HOSTS") ] \
-	    || (umask "$newUmask" && mkdir -p -m 0700 $(dirname "$KNOWN_HOSTS") ) \
-	    || failure "Could not create path to known_hosts file '$KNOWN_HOSTS'"
-	# make sure to create this file with the appropriate bits turned off:
-	(umask "$newUmask" && touch "$KNOWN_HOSTS") \
-	    || failure "Unable to create known_hosts file '$KNOWN_HOSTS'"
-    fi
-
-    # check permissions on the known_hosts file path
-    check_key_file_permissions $(whoami) "$KNOWN_HOSTS" \
-	|| failure "Bad permissions governing known_hosts file '$KNOWN_HOSTS'"
-
-    # create a lockfile on known_hosts:
-    lock create "$KNOWN_HOSTS"
-    # FIXME: we're discarding any pre-existing EXIT trap; is this bad?
-    trap "lock remove $KNOWN_HOSTS" EXIT
-
-    # note pre update file checksum
-    fileCheck=$(file_hash "$KNOWN_HOSTS")
-
-    for host ; do
-	# process the host
-	process_host_known_hosts "$host" || returnCode="$?"
-	# note the result
-	case "$returnCode" in
-	    0)
-		nHostsOK=$((nHostsOK+1))
-		;;
-	    2)
-		nHostsBAD=$((nHostsBAD+1))
-		;;
-	esac
-
-	# touch the lockfile, for good measure.
-	lock touch "$KNOWN_HOSTS"
-    done
-
-    # remove the lockfile and the trap
-    lock remove "$KNOWN_HOSTS"
-    trap - EXIT
-
-    # note if the known_hosts file was updated
-    if [ "$(file_hash "$KNOWN_HOSTS")" != "$fileCheck" ] ; then
-	log debug "known_hosts file updated."
-    fi
-
-    # if an acceptable host was found, return 0
-    if [ "$nHostsOK" -gt 0 ] ; then
-	return 0
-    # else if no ok hosts were found...
-    else
-	# if no bad host were found then no hosts were found at all,
-	# and return 1
-	if [ "$nHostsBAD" -eq 0 ] ; then
-	    return 1
-	# else if at least one bad host was found, return 2
-	else
-	    return 2
-	fi
-    fi
-}
-
-# process hosts from a known_hosts file
-process_known_hosts() {
-    local hosts
-
-    # exit if the known_hosts file does not exist
-    if [ ! -e "$KNOWN_HOSTS" ] ; then
-	failure "known_hosts file '$KNOWN_HOSTS' does not exist."
-    fi
-
-    log debug "processing known_hosts file:"
-    log debug " $KNOWN_HOSTS"
-
-    hosts=$(meat "$KNOWN_HOSTS" | cut -d ' ' -f 1 | grep -v '^|.*$' | tr , ' ' | tr '\n' ' ')
-
-    if [ -z "$hosts" ] ; then
-	log debug "no hosts to process."
-	return
-    fi
-
-    # take all the hosts from the known_hosts file (first
-    # field), grep out all the hashed hosts (lines starting
-    # with '|')...
-    update_known_hosts $hosts
-}
-
-# process uids for the authorized_keys file
-process_uid_authorized_keys() {
-    local userID
-    local koptions
-    local nKeys
-    local nKeysOK
-    local ok
-    local sshKey
-
-    # set the key processing mode
-    export REQUIRED_KEY_CAPABILITY="$REQUIRED_USER_KEY_CAPABILITY"
-
-    koptions="$1"
-    userID="$2"
-
-    log verbose "processing: $userID"
-
-    nKeys=0
-    nKeysOK=0
+    log debug "key file: $keyFile"
 
     IFS=$'\n'
     for line in $(process_user_id "$userID") ; do
-	# note that key was found
-	nKeys=$((nKeys+1))
-
-	ok=$(echo "$line" | cut -d: -f1)
-	sshKey=$(echo "$line" | cut -d: -f2)
+	ok=${line%%:*}
+	sshKey=${line#*:}
 
         if [ -z "$sshKey" ] ; then
             continue
         fi
 
 	# remove the old host key line
-	remove_line "$AUTHORIZED_KEYS" "$sshKey"
+	if [[ "$keyFile" != '-' ]] ; then
+	    case "$FILE_TYPE" in
+		('authorized_keys')
+		    remove_line "$keyFile" "$sshKey"
+		    ;;
+		('known_hosts')
+		    host=${userID#ssh://}
+		    remove_line "$keyFile" "$host" "$sshKey"
+		    ;;
+	    esac
+	fi
 
 	# if key OK, add new host line
 	if [ "$ok" -eq '0' ] ; then
-	    # note that key was found ok
-	    nKeysOK=$((nKeysOK+1))
-
-	    ssh2authorized_keys "$koptions" "$userID" "$sshKey" >> "$AUTHORIZED_KEYS"
-	fi
-    done
-
-    # if at least one key was found...
-    if [ "$nKeys" -gt 0 ] ; then
-	# if ok keys were found, return 0
-	if [ "$nKeysOK" -gt 0 ] ; then
-	    return 0
-	# else return 2
-	else
-	    return 2
-	fi
-    # if no keys were found, return 1
-    else
-	return 1
-    fi
-}
-
-# update the authorized_keys files from a list of user IDs on command
-# line
-update_authorized_keys() {
-    local returnCode=0
-    local userID
-    local nIDs
-    local nIDsOK
-    local nIDsBAD
-    local fileCheck
-    local x koptions
-    declare -i argtype
-
-    if (( $# % 2 )); then log error "Bad number of arguments; this should never happen."; return 1; fi
-
-    # the number of ids specified on command line
-    (( nIDs=$#/2 ))
-    (( argtype=0 ))
-
-    nIDsOK=0
-    nIDsBAD=0
-
-    log debug "updating authorized_keys file:"
-    log debug " $AUTHORIZED_KEYS"
-
-    # check permissions on the authorized_keys file path
-    check_key_file_permissions $(whoami) "$AUTHORIZED_KEYS" || failure
-
-    # create a lockfile on authorized_keys
-    lock create "$AUTHORIZED_KEYS"
-    # FIXME: we're discarding any pre-existing EXIT trap; is this bad?
-    trap "lock remove $AUTHORIZED_KEYS" EXIT
-
-    # note pre update file checksum
-    fileCheck="$(file_hash "$AUTHORIZED_KEYS")"
-
-    # remove any monkeysphere lines from authorized_keys file
-    remove_monkeysphere_lines "$AUTHORIZED_KEYS"
-
-    for x; do
-        (( argtype++ ))
-        if (( $argtype % 2 )); then
-            koptions="$x"
-        else
-            userID="$x"
-
-	    # process the user ID, change return code if key not found
-	    # for user ID
-	    process_uid_authorized_keys "$koptions" "$userID" || returnCode="$?"
-
-	    # note the result
-	    case "$returnCode" in
-		0)
-		    nIDsOK=$((nIDsOK+1))
+	    case "$FILE_TYPE" in
+		('raw')
+		    echo "$sshKey" | log debug
+		    if [[ "$keyFile" == '-' ]] ; then
+			echo "$sshKey"
+		    else
+			echo "$sshKey" >>"$keyFile"
+		    fi
 		    ;;
-		2)
-		    nIDsBAD=$((nIDsBAD+1))
+		('authorized_keys')
+		    ssh2authorized_keys "$userID" "$sshKey" | log debug
+		    if [[ "$keyFile" == '-' ]] ; then
+			ssh2authorized_keys "$userID" "$sshKey"
+		    else
+			ssh2authorized_keys "$userID" "$sshKey" >> "$keyFile"
+		    fi
+		    ;;
+		('known_hosts')
+		    host=${userID#ssh://}
+		    ssh2known_hosts "$host" "$sshKey" | log debug
+		    # hash if specified
+		    if [ "$HASH_KNOWN_HOSTS" = 'true' ] ; then
+			if (type ssh-keygen >/dev/null) ; then
+			    # FIXME: this is really hackish cause
+			    # ssh-keygen won't hash from stdin to
+			    # stdout
+			    tmpfile=$(mktemp ${TMPDIR:-/tmp}/tmp.XXXXXXXXXX)
+			    ssh2known_hosts "$host" "$sshKey" \
+				> "$tmpfile"
+			    ssh-keygen -H -f "$tmpfile" 2>/dev/null
+			    if [[ "$keyFile" == '-' ]] ; then
+				cat "$tmpfile"
+			    else
+				cat "$tmpfile" >> "$keyFile"
+			    fi
+			    rm -f "$tmpfile" "${tmpfile}.old"
+			    # FIXME: we could do this without needing
+			    # ssh-keygen.  hashed known_hosts looks
+			    # like: |1|X|Y where 1 means SHA1 (nothing
+			    # else is defined in openssh sources), X
+			    # is the salt (same length as the digest
+			    # output), base64-encoded, and Y is the
+			    # digested hostname (also base64-encoded).
+			    # see hostfile.{c,h} in openssh sources.
+			else
+			    failure "Cannot hash known_hosts as requested"
+			fi
+
+			# log if this is a new key to the known_hosts file
+			if [ "$noKey" ] ; then
+			    log info "* new key will be added to known_hosts file."
+			fi
+		    else
+			if [[ "$keyFile" == '-' ]] ; then
+			    ssh2known_hosts "$host" "$sshKey"
+			else
+			    ssh2known_hosts "$host" "$sshKey" >>"$keyFile"
+			fi
+		    fi
 		    ;;
 	    esac
-
-	    # touch the lockfile, for good measure.
-	    lock touch "$AUTHORIZED_KEYS"
 	fi
     done
-
-    # remove the lockfile and the trap
-    lock remove "$AUTHORIZED_KEYS"
-
-    # remove the trap
-    trap - EXIT
-
-    # note if the authorized_keys file was updated
-    if [ "$(file_hash "$AUTHORIZED_KEYS")" != "$fileCheck" ] ; then
-	log debug "authorized_keys file updated."
-    fi
-
-    # if an acceptable id was found, return 0
-    if [ "$nIDsOK" -gt 0 ] ; then
-	return 0
-    # else if no ok ids were found...
-    else
-	# if no bad ids were found then no ids were found at all, and
-	# return 1
-	if [ "$nIDsBAD" -eq 0 ] ; then
-	    return 1
-	# else if at least one bad id was found, return 2
-	else
-	    return 2
-	fi
-    fi
 }
 
-# process an authorized_user_ids file for authorized_keys
+# process an authorized_user_ids file on stdin for authorized_keys
 process_authorized_user_ids() {
+    local authorizedKeys="$1"
+    declare -i nline=0
     local line
-    declare -i nline
     declare -a userIDs
     declare -a koptions
-    declare -a export_array
-
-    authorizedUserIDs="$1"
-
-    (( nline=0 ))
-
-    # exit if the authorized_user_ids file is empty
-    if [ ! -e "$authorizedUserIDs" ] ; then
-	failure "authorized_user_ids file '$authorizedUserIDs' does not exist."
-    fi
-
-    log debug "processing authorized_user_ids file:"
-    log debug " $authorizedUserIDs"
-
-    # check permissions on the authorized_user_ids file path
-    check_key_file_permissions $(whoami) "$authorizedUserIDs" || failure
-
-    if ! meat "$authorizedUserIDs" >/dev/null ; then
-	log debug " no user IDs to process."
-	return
-    fi
-
-    nline=0
 
     # extract user IDs from authorized_user_ids file
     IFS=$'\n'
-    for line in $(meat "$authorizedUserIDs") ; do
+    while read line ; do
 	case "$line" in
+	    ("#"*)
+		continue
+		;;
 	    (" "*|$'\t'*)
 		if [[ -z ${koptions[${nline}]} ]]; then
 	            koptions[${nline}]=$(echo $line | sed 's/^[ 	]*//;s/[ 	]$//;')
@@ -1231,7 +899,7 @@ process_authorized_user_ids() {
 		fi
 		;;
             (*)
-		((nline++))
+		((++nline))
 		userIDs[${nline}]="$line"
 		unset koptions[${nline}] || true
 		;;
@@ -1239,10 +907,8 @@ process_authorized_user_ids() {
     done
 
     for i in $(seq 1 $nline); do
-        export_array+=("${koptions[$i]}" "${userIDs[$i]}")
+	AUTHORIZED_KEYS_OPTIONS="${koptions[$i]}" FILE_TYPE='authorized_keys' process_keys_for_file "$authorizedKeys" "${userIDs[$i]}" || returnCode="$?"
     done
-
-    update_authorized_keys "${export_array[@]}"
 }
 
 # takes a gpg key or keys on stdin, and outputs a list of

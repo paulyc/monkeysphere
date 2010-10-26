@@ -1,3 +1,17 @@
+monkeysphere (0.34) unstable; urgency=low
+
+  * fix keys-for-user so that it outputs proper authorized_keys lines
+    (close MS #2550)
+  * refactor key processing for key files, greatly reducing redundant code
+    paths
+  * update authorized_keys and known_hosts in temp filess that are
+    atomically moved into place
+  * don't fail if authorized_keys file not already present (Closes: 600644)
+  * document CHECK_KEYSERVER in monkeysphere-authentication man page
+    (close MS #2556)
+
+ -- Jameson Rollins <jrollins@finestructure.net>  Tue, 26 Oct 2010 10:27:01 -0400
+
 monkeysphere (0.33) unstable; urgency=low
 
   [ Daniel Kahn Gillmor ]
