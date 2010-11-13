@@ -1,3 +1,9 @@
+monkeysphere (0.35-1) experimental; urgency=low
+
+  * New upstream release
+
+ -- Jameson Rollins <jrollins@finestructure.net>  Sat, 13 Nov 2010 18:25:47 -0500
+
 monkeysphere (0.34-1) experimental; urgency=low
 
   [ Jameson Rollins ]
