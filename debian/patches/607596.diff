@@ -1,0 +1,33 @@
+commit d37829e6c2dfdcac912a9d6e9203e62343f3dd01
+Author: Micah Anderson <micah@riseup.net>
+Date:   Fri Oct 1 10:07:46 2010 -0400
+
+    fix revoke_key typo in creating temporary directory
+    fix variable specifying which key to revoke
+    
+    monkeysphere-host revoke-key <key-id> would produce the following errors, this
+    commit fixes that:
+    
+    Really publish this cert to zimmermann.mayfirst.org ? (Y/n) y
+    /usr/share/monkeysphere/mh/revoke_key: line 96: mkmstempdir: command not found
+    gpg: new configuration file `/root/.gnupg/gpg.conf' created
+    gpg: WARNING: options in `/root/.gnupg/gpg.conf' are not yet active during this run
+    gpg: "0x!" not a key ID: skipping
+
+diff --git a/src/share/mh/revoke_key b/src/share/mh/revoke_key
+index 5a013e0..9077e4c 100644
+--- a/src/share/mh/revoke_key
++++ b/src/share/mh/revoke_key
+@@ -93,10 +93,10 @@ y
+ 	if [ "${really/n/N}" = 'N' ] ; then
+ 	    printf "Not publishing.\n" >&2
+ 	else
+-	    local newhome=$(mkmstempdir)
++	    local newhome=$(msmktempdir)
+ 	    GNUPGHOME="$newhome" gpg --no-tty --quiet --import < "$HOST_KEY_FILE"
+ 	    GNUPGHOME="$newhome" gpg --no-tty --quiet --import <<< "$revcert"
+-	    GNUPGHOME="$newhome" gpg --keyserver "$KEYSERVER" --send "0x${HOST_FINGERPRINT}!"
++	    GNUPGHOME="$newhome" gpg --keyserver "$KEYSERVER" --send "0x${keyID}!"
+ 	    rm -rf "$newhome"
+ 	fi
+     fi
