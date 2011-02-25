@@ -1,3 +1,9 @@
+monkeysphere (0.35-2) unstable; urgency=low
+
+  * move from experimental to unstable.
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 25 Feb 2011 14:37:05 -0500
+
 monkeysphere (0.35-1) experimental; urgency=low
 
   * New upstream release
