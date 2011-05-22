@@ -1,4 +1,4 @@
-monkeysphere (0.31-4) unstable; urgency=low
+monkeysphere (0.31-4) stable; urgency=low
 
   * fix monkeysphere-host revoke-key (Closes: #607596)
 
