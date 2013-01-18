@@ -1,3 +1,13 @@
+monkeysphere (0.36~pre) unstable; urgency=low
+
+  * keytrans no longer confuses user IDs across different keys (closes MS
+    #2682)
+  * fetch all available keys from keyserver instead of first 5 (closes MS
+    #1046)
+  * enable openpgp2pem for keytrans (Closes: #698383)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 18 Jan 2013 15:21:36 -0500
+
 monkeysphere (0.35) upstream;
 
   * Remove reference to USE_VALIDATION_AGENT.
