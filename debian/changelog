@@ -1,3 +1,11 @@
+monkeysphere (0.36~pre-1) experimental; urgency=low
+
+  * New upstram pre-release (into experimental due to freeze)
+    (Closes: #635648, #698383)
+  * bumped Standards-Version to 3.9.4 (no changes needed)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 18 Jan 2013 15:43:43 -0500
+
 monkeysphere (0.35-2) unstable; urgency=low
 
   * move from experimental to unstable.

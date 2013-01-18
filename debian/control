@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 7.0.50~),
  lockfile-progs | procmail,
  openssl,
  bash (>= 3.2)
-Standards-Version: 3.9.1
+Standards-Version: 3.9.4
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: git://git.monkeysphere.info/monkeysphere
 Dm-Upload-Allowed: yes
