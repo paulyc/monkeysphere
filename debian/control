@@ -3,7 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Jameson Rollins <jrollins@finestructure.net>
 Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Build-Depends: debhelper (>= 7.0.50~),
+Build-Depends: debhelper (>= 9~),
  cpio,
  socat,
  openssh-server,
@@ -16,7 +16,6 @@ Build-Depends: debhelper (>= 7.0.50~),
 Standards-Version: 3.9.4
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: git://git.monkeysphere.info/monkeysphere
-Dm-Upload-Allowed: yes
 
 Package: monkeysphere
 Architecture: all

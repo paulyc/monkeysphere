@@ -1,10 +1,13 @@
-monkeysphere (0.36~pre-1) experimental; urgency=low
+monkeysphere (0.36-1) unstable; urgency=low
 
-  * New upstram pre-release (into experimental due to freeze)
+  * New upstram release
     (Closes: #635648, #698383)
   * bumped Standards-Version to 3.9.4 (no changes needed)
+  * moved debhelper compat level to 9
+  * debian/control: remove obsolete Dm-Upload-Allowed
+  * debian/copyright: update to modern machine-readable format
 
- -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 18 Jan 2013 15:43:43 -0500
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 11 Jul 2013 13:38:51 -0400
 
 monkeysphere (0.35-2) unstable; urgency=low
 
