@@ -2,13 +2,25 @@
 
 # postrm script for monkeysphere
 
-# Author: Jameson Rollins <jrollins@finestructure.net>
-# Copyright 2008-2009
+# Author: Jameson Rollins <jrollins@finestructure.net>, 
+#         Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+# Copyright 2008-2014
 
 set -e
 
 case $1 in
     purge)
+        # protect users from locking themselves out:
+        if which sshd >/dev/null && sshd -T | grep -i '^authorizedkeysfile.*/var/lib/monkeysphere' >&2 ; then
+            echo >&2 ""
+            echo >&2 "  Monkeysphere Warning!"
+            echo >&2 "  ====================="
+            echo >&2 "  Not purging monkeysphere because sshd is configured to rely on it."
+            echo >&2 "  Please remove AuthorizedKeysFile references to /var/lib/monkeysphere"
+            echo >&2 "  from sshd_config before purging the monkeysphere package."
+            echo >&2 ""
+            exit 1
+        fi
 	# delete monkeysphere user
 	# http://wiki.debian.org/AccountHandlingInMaintainerScripts
 	if which deluser >/dev/null 2>&1 ; then
@@ -16,6 +28,7 @@ case $1 in
 	else
 	    echo >&2 "not removing monkeysphere system account because deluser command was not found"
 	fi
+        rm -rf /var/lib/monkeysphere
         ;;
 esac
 

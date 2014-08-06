@@ -1,6 +1,14 @@
+monkeysphere (0.37-1) unstable; urgency=medium
+
+  * new upstream release (Closes: #745144, #755337)
+  * remove /var/lib/monkeysphere on package purge (Closes: #668754)
+  * bumped Standards-Version to 3.9.5 (no changes needed)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 06 Aug 2014 13:35:34 -0400
+
 monkeysphere (0.36-1) unstable; urgency=low
 
-  * New upstram release
+  * New upstream release
     (Closes: #635648, #698383)
   * bumped Standards-Version to 3.9.4 (no changes needed)
   * moved debhelper compat level to 9
