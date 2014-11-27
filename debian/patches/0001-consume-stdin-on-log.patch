@@ -1,0 +1,50 @@
+commit e7b1fd672161872c874cb2b28a7277ead47e4f0a
+Author: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Date:   Wed Nov 26 19:35:24 2014 -0500
+
+    Always consume stdin when log is called without a message argument
+    
+    See the discussion about this in https://bugs.debian.org/635711
+    
+    I'm hoping this will resolve the intermittent SIGPIPEs plaguing
+    monkeysphere's postinst.
+    
+    I'm still unable to reproduce the problem.  If people who can
+    reproduce the problem could try this patch and report back if it fixes
+    things for them, that would be great.
+
+diff --git a/src/share/common b/src/share/common
+index e377ff3..2ea097e 100755
+--- a/src/share/common
++++ b/src/share/common
+@@ -38,6 +38,7 @@ log() {
+     local output
+     local alllevels
+     local found=
++    local written=
+ 
+     # don't include SILENT in alllevels: it's handled separately
+     # list in decreasing verbosity (all caps).
+@@ -50,6 +51,9 @@ log() {
+ 
+     # just go ahead and return if the log level is silent
+     if [ "$LOG_LEVEL" = 'SILENT' ] ; then
++        if [ ! "$2" ] ; then
++            cat >/dev/null
++        fi
+ 	return
+     fi
+ 
+@@ -81,8 +85,12 @@ log() {
+ 	    else
+ 		cat
+ 	    fi | sed 's/^/'"${LOG_PREFIX}"'/' >&2
++            written=true
+ 	fi
+     done
++    if [ "$written" != 'true' -a ! "$1" ]; then
++        cat >/dev/null
++    fi
+ }
+ 
+ # run command as monkeysphere user
