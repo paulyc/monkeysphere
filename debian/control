@@ -3,33 +3,29 @@ Section: net
 Priority: extra
 Maintainer: Jameson Rollins <jrollins@finestructure.net>
 Uploaders: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Build-Depends: debhelper (>= 9~),
- cpio,
- socat,
- openssh-server,
- gnupg (>= 1.4.10),
- libcrypt-openssl-rsa-perl,
- libdigest-sha-perl,
- lockfile-progs | procmail,
- openssl,
- bash (>= 3.2)
+Build-Depends: bash (>= 3.2),
+               cpio,
+               debhelper (>= 9~),
+               gnupg (>= 1.4.10),
+               libcrypt-openssl-rsa-perl,
+               libdigest-sha-perl,
+               lockfile-progs | procmail,
+               openssh-server,
+               openssl,
+               socat
 Standards-Version: 3.9.6
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: git://git.monkeysphere.info/monkeysphere
 
 Package: monkeysphere
 Architecture: all
-Depends:
- gnupg (>= 1.4.10),
- libcrypt-openssl-rsa-perl,
- libdigest-sha-perl,
- lockfile-progs | procmail,
- adduser,
- ${misc:Depends}
-Recommends: netcat | socat,
- ssh-askpass,
- cron,
- openssh-client
+Depends: adduser,
+         gnupg (>= 1.4.10),
+         libcrypt-openssl-rsa-perl,
+         libdigest-sha-perl,
+         lockfile-progs | procmail,
+         ${misc:Depends}
+Recommends: cron, netcat | socat, openssh-client, ssh-askpass
 Suggests: monkeysphere-validation-agent
 Enhances: openssh-client, openssh-server
 Description: leverage the OpenPGP web of trust for SSH and TLS authentication
@@ -40,6 +36,6 @@ Description: leverage the OpenPGP web of trust for SSH and TLS authentication
  for users to get validated host keys, and for hosts to authenticate
  users.  Current monkeysphere SSH tools are designed to integrate
  with the OpenSSH implementation of the Secure Shell protocol.
- . 
+ .
  Monkeysphere can also be used by a validation agent to validate TLS
  connections (e.g. https).
