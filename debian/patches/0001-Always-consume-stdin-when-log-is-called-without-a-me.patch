@@ -1,17 +1,20 @@
-commit e7b1fd672161872c874cb2b28a7277ead47e4f0a
-Author: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Date:   Wed Nov 26 19:35:24 2014 -0500
+From e7b1fd672161872c874cb2b28a7277ead47e4f0a Mon Sep 17 00:00:00 2001
+From: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Date: Wed, 26 Nov 2014 19:35:24 -0500
+Subject: [PATCH 1/2] Always consume stdin when log is called without a message
+ argument
 
-    Always consume stdin when log is called without a message argument
-    
-    See the discussion about this in https://bugs.debian.org/635711
-    
-    I'm hoping this will resolve the intermittent SIGPIPEs plaguing
-    monkeysphere's postinst.
-    
-    I'm still unable to reproduce the problem.  If people who can
-    reproduce the problem could try this patch and report back if it fixes
-    things for them, that would be great.
+See the discussion about this in https://bugs.debian.org/635711
+
+I'm hoping this will resolve the intermittent SIGPIPEs plaguing
+monkeysphere's postinst.
+
+I'm still unable to reproduce the problem.  If people who can
+reproduce the problem could try this patch and report back if it fixes
+things for them, that would be great.
+---
+ src/share/common | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/src/share/common b/src/share/common
 index e377ff3..2ea097e 100755
@@ -48,3 +51,6 @@ index e377ff3..2ea097e 100755
  }
  
  # run command as monkeysphere user
+-- 
+2.1.4
+
