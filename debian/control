@@ -45,7 +45,7 @@ Description: leverage the OpenPGP web of trust for SSH and TLS authentication
 Package: agent-transfer
 Architecture: any
 Depends: gnupg-agent (>= 2.1.0), ${misc:Depends}, ${shlibs:Depends}
-Recommends: gnupg-agent, openssh-client, pinentry-curses | pinentry
+Recommends: openssh-client, pinentry-curses | pinentry
 Enhances: openssh-client, openssh-server
 Description: copy a secret key from GnuPG's gpg-agent to OpenSSH's ssh-agent
  agent-transfer is a simple utility to extract a secret key from
