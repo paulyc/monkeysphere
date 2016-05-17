@@ -7,8 +7,10 @@ Build-Depends: bash (>= 3.2),
                cpio,
                debhelper (>= 9~),
                gnupg (>= 1.4.10),
+               libassuan-dev,
                libcrypt-openssl-rsa-perl,
                libdigest-sha-perl,
+               libgcrypt20-dev,
                lockfile-progs | procmail,
                openssh-server,
                openssl,
@@ -25,7 +27,7 @@ Depends: adduser,
          libdigest-sha-perl,
          lockfile-progs | procmail,
          ${misc:Depends}
-Recommends: cron, netcat | socat, openssh-client, ssh-askpass
+Recommends: agent-transfer, cron, netcat | socat, openssh-client, ssh-askpass
 Suggests: monkeysphere-validation-agent
 Enhances: openssh-client, openssh-server
 Description: leverage the OpenPGP web of trust for SSH and TLS authentication
@@ -39,3 +41,17 @@ Description: leverage the OpenPGP web of trust for SSH and TLS authentication
  .
  Monkeysphere can also be used by a validation agent to validate TLS
  connections (e.g. https).
+
+Package: agent-transfer
+Architecture: any
+Depends: gnupg-agent (>= 2.1.0), ${misc:Depends}, ${shlibs:Depends}
+Recommends: gnupg-agent, openssh-client, pinentry-curses | pinentry
+Enhances: openssh-client, openssh-server
+Description: copy a secret key from GnuPG's gpg-agent to OpenSSH's ssh-agent
+ agent-transfer is a simple utility to extract a secret key from
+ GnuPG's gpg-agent and send it to a running ssh-agent.  This is useful
+ for those who prefer the runtime semantics and behavior of OpenSSH's
+ ssh-agent, but whose secret keys are held in long-term storage by
+ GnuPG's gpg-agent.
+ .
+ This tool comes from the monkeysphere project.
