@@ -1,3 +1,10 @@
+monkeysphere (0.38-1) unstable; urgency=medium
+
+  * new upstream release
+   - includes new binary package "agent-transfer"
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 17 May 2016 00:56:34 -0400
+
 monkeysphere (0.37-3) unstable; urgency=medium
 
   * actually patch log() to consume all stdin when not given a message
