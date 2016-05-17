@@ -15,7 +15,7 @@ Build-Depends: bash (>= 3.2),
                openssh-server,
                openssl,
                socat
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: git://git.monkeysphere.info/monkeysphere
 
