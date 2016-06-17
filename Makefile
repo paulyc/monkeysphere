@@ -15,8 +15,14 @@ PREFIX ?= /usr
 MANPREFIX ?= $(PREFIX)/share/man
 LOCALSTATEDIR ?= /var/lib
 
-# nothing actually needs to be built now.
-all: 
+CFLAGS +=  $(shell libassuan-config --cflags --libs)
+CFLAGS +=  $(shell libgcrypt-config --cflags --libs)
+CFLAGS += --pedantic -Wall -Werror -std=c99
+
+all: src/agent-transfer/agent-transfer
+
+src/agent-transfer/agent-transfer: src/agent-transfer/main.c src/agent-transfer/ssh-agent-proto.h
+	gcc -o $@ $(CFLAGS) $(LDFLAGS) $<
 
 debian-package:
 	git buildpackage -uc -us
@@ -30,6 +36,7 @@ macports-portfile:
 	./utils/build-macports-portfile
 
 clean:
+	rm -f src/agent-transfer/agent-transfer
 	# clean up old monkeysphere packages lying around as well.
 	rm -f monkeysphere_*
 
@@ -58,6 +65,7 @@ install: all installman
 	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2ssh
 	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2pem
 	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2spki
+	install -m 0755 src/agent-transfer/agent-transfer $(DESTDIR)$(PREFIX)/bin
 	install -m 0744 src/transitions/* $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions
 	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions/0.23
 	sed -i 's:__SYSSHAREDIR_PREFIX__:$(PREFIX):' $(DESTDIR)$(PREFIX)/share/monkeysphere/transitions/0.28
@@ -100,10 +108,12 @@ releasenote:
 
 test: test-keytrans test-basic
 
-test-basic:
+check: test
+
+test-basic: src/agent-transfer/agent-transfer
 	MONKEYSPHERE_TEST_NO_EXAMINE=true ./tests/basic
 
-test-keytrans:
+test-keytrans: src/agent-transfer/agent-transfer
 	MONKEYSPHERE_TEST_NO_EXAMINE=true ./tests/keytrans
 
-.PHONY: all tarball debian-package freebsd-distinfo clean install installman releasenote test
+.PHONY: all tarball debian-package freebsd-distinfo clean install installman releasenote test check
