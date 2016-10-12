@@ -1,0 +1,21 @@
+From: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Date: Wed, 12 Oct 2016 02:44:55 -0400
+Subject: test for PATH_MAX; use PATH_MAX!
+
+---
+ src/agent-transfer/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/agent-transfer/main.c b/src/agent-transfer/main.c
+index cb57e93..2712a41 100644
+--- a/src/agent-transfer/main.c
++++ b/src/agent-transfer/main.c
+@@ -91,7 +91,7 @@ trim_and_unescape (const char *string)
+ }
+ 
+ #ifdef PATH_MAX
+-#define BUFSIZE PATHMAX
++#define BUFSIZE PATH_MAX
+ #else
+ #define BUFSIZE 4096
+ #endif
