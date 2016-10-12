@@ -464,7 +464,8 @@ int get_ssh_auth_sock_fd() {
     fprintf (stderr, "Could not open a socket file descriptor\n");
     return ret;
   }
-  if (-1 == connect (ret, &sockaddr, sizeof(sockaddr))) {
+  if (-1 == connect (ret, (const struct sockaddr*)(&sockaddr),
+                     sizeof(sockaddr))) {
     fprintf (stderr, "Failed to connect to ssh agent socket %s\n", sock_name);
     close (ret);
     return -1;
@@ -673,8 +674,10 @@ int main (int argc, const char* argv[]) {
   }
 
   if (!args.comment) {
-    err = asprintf (&alt_comment, "GnuPG keygrip %s", args.keygrip);
-    if (err < 0) {
+    int bytes_printed = asprintf (&alt_comment,
+                                  "GnuPG keygrip %s",
+                                  args.keygrip);
+    if (bytes_printed < 0) {
       fprintf (stderr, "failed to generate key comment\n");
       return 1;
     }
