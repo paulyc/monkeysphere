@@ -1,3 +1,9 @@
+monkeysphere (0.40-2) unstable; urgency=medium
+
+  * try to fix kfreebsd builds
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 12 Oct 2016 02:46:18 -0400
+
 monkeysphere (0.40-1) unstable; urgency=medium
 
   * new upstream release
