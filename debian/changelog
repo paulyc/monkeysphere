@@ -1,3 +1,11 @@
+monkeysphere (0.40-1) unstable; urgency=medium
+
+  * new upstream release
+   - build cleanly with ld --as-needed (Closes: #836228)
+   - tests pass with GnuPG 2.1.15 (Closes: #839790)
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 12 Oct 2016 01:16:54 -0400
+
 monkeysphere (0.39-1) unstable; urgency=medium
 
   * new upstream bugfix release
