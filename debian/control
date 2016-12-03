@@ -34,7 +34,7 @@ Depends:
  ${misc:Depends},
 Recommends:
  agent-transfer,
- cron,
+ cron-daemon,
  netcat-openbsd | netcat | socat,
  openssh-client,
  ssh-askpass,
