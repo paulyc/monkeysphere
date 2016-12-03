@@ -21,7 +21,8 @@ Build-Depends:
  socat <!nocheck>,
 Standards-Version: 3.9.8
 Homepage: http://web.monkeysphere.info/
-Vcs-Git: git://git.monkeysphere.info/monkeysphere
+Vcs-Git: https://anonscm.debian.org/git/collab-maint/monkeysphere -b debian
+Vcs-Browser: https://anonscm.debian.org/git/collab-maint/monkeysphere
 
 Package: monkeysphere
 Architecture: all
