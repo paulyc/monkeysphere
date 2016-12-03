@@ -81,6 +81,8 @@ Key-Usage: sign
 Name-Real: testtest
 Expire-Date: 0
 
+%no-ask-passphrase
+%no-protection
 %commit
 %echo done
 EOF
@@ -111,7 +113,7 @@ diff -u \
     <(hd "$TEMPDIR"/secret.key) \
     <(hd "$TEMPDIR"/converted.secret.key)
 
-KEYFPR=$(gpg --fingerprint --with-colons --list-keys | grep ^fpr | cut -f10 -d:)
+KEYFPR=$(gpg --fingerprint --with-colons --list-keys | awk -F: '/^fpr:/{ if (ok) { print $10 } ; ok=0 } /^pub:/{ ok=1 }')
 KEYID=$(printf "%s" "$KEYFPR" | cut -b25-40)
 
 echo "conversions look good!"
