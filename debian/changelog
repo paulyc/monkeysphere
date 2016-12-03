@@ -1,3 +1,26 @@
+monkeysphere (0.41-1) unstable; urgency=medium
+
+  * new upstream release
+    - pem2openpgp now includes issuer fingerprint subpacket
+      in hashed self-sig, more compatible with GnuPG 2.1.16
+      (Closes: #846554)
+    - avoid blocking for entropy during test suite
+      (Closes: #841208)
+    - ensure that attempts to fetch primary key fingerprint only fetch
+      primary key fingerprint even if subkey fprs are emitted
+      (Closes: #846554)
+  * convert to debhelper 10
+  * wrap-and-sort -ast
+  * add netcat-openbsd to Recommends (Closes: #595947)
+  * switch Recommends: from cron to cron-daemon (Closes: #842823)
+  * drop patches already applied upstream
+  * moved debian packaging to collab-maint for better visibility
+  * added debian/watch to make lintian happy
+  * converted debian/NEWS to not use asterisk-bulleted style
+  * use all hardening options during C build
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 02 Dec 2016 22:58:25 -0500
+
 monkeysphere (0.40-2) unstable; urgency=medium
 
   * try to fix kfreebsd builds
