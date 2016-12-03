@@ -35,7 +35,7 @@ Depends:
 Recommends:
  agent-transfer,
  cron,
- netcat | socat,
+ netcat-openbsd | netcat | socat,
  openssh-client,
  ssh-askpass,
 Suggests:
