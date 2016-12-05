@@ -3,7 +3,7 @@ monkeysphere (0.41-1) unstable; urgency=medium
   * new upstream release
     - pem2openpgp now includes issuer fingerprint subpacket
       in hashed self-sig, more compatible with GnuPG 2.1.16
-      (Closes: #846554)
+      (Closes: #844971)
     - avoid blocking for entropy during test suite
       (Closes: #841208)
     - ensure that attempts to fetch primary key fingerprint only fetch
