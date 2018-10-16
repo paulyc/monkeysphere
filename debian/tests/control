@@ -1,0 +1,5 @@
+Test-Command: MONKEYSPHERE_TEST_USE_SYSTEM=true MONKEYSPHERE_TEST_NO_EXAMINE=true tests/keytrans
+Depends: @
+
+Test-Command: MONKEYSPHERE_TEST_USE_SYSTEM=true MONKEYSPHERE_TEST_NO_EXAMINE=true tests/basic
+Depends: @, openssh-server, openssl, socat
