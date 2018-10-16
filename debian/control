@@ -1,6 +1,6 @@
 Source: monkeysphere
 Section: net
-Priority: extra
+Priority: optional
 Maintainer: Jameson Rollins <jrollins@finestructure.net>
 Uploaders:
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
