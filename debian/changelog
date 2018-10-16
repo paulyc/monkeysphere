@@ -212,7 +212,7 @@ monkeysphere (0.23.1-1) unstable; urgency=low
  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sat, 21 Feb 2009 18:09:47 -0500
 
 monkeysphere (0.23-1) unstable; urgency=low
-  
+
   * New upstream release: "The Golden Bezoar Release"
 
  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sat, 21 Feb 2009 17:51:06 -0500
