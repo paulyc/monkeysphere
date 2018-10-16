@@ -19,7 +19,7 @@ Build-Depends:
  openssh-server <!nocheck>,
  openssl <!nocheck>,
  socat <!nocheck>,
-Standards-Version: 3.9.8
+Standards-Version: 4.2.1
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: https://salsa.debian.org/pkg-privacy-team/monkeysphere.git
 Vcs-Browser: https://salsa.debian.org/pkg-privacy-team/monkeysphere
