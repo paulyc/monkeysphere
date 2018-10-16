@@ -23,6 +23,7 @@ Standards-Version: 4.2.1
 Homepage: http://web.monkeysphere.info/
 Vcs-Git: https://salsa.debian.org/pkg-privacy-team/monkeysphere.git
 Vcs-Browser: https://salsa.debian.org/pkg-privacy-team/monkeysphere
+Rules-Requires-Root: no
 
 Package: monkeysphere
 Architecture: all
