@@ -1,9 +1,11 @@
 Source: monkeysphere
 Section: net
 Priority: optional
-Maintainer: Jameson Rollins <jrollins@finestructure.net>
+Maintainer: Debian Privacy Tools Maintainers <pkg-privacy-maintainers@lists.alioth.debian.org>
 Uploaders:
+ Antoine Beaupré <anarcat@debian.org>,
  Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
+ Jameson Rollins <jrollins@finestructure.net>,
 Build-Depends:
  bash (>= 3.2),
  cpio,
