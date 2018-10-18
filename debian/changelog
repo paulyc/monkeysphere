@@ -1,3 +1,11 @@
+monkeysphere (0.42-2) unstable; urgency=medium
+
+  * added cpio as a requirement for the basic autopkgtest
+  * gpg is super noisy to stderr -- ignore that noise during
+    autopkgtest
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Thu, 18 Oct 2018 10:17:55 -0400
+
 monkeysphere (0.42-1) unstable; urgency=medium
 
   * new upstream bugfix release.
