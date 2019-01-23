@@ -35,13 +35,13 @@ Depends:
  libcrypt-openssl-rsa-perl,
  libdigest-sha-perl,
  lockfile-progs | procmail,
+ openssh-client,
  ${misc:Depends},
  ${perl:Depends},
 Recommends:
  agent-transfer,
  cron-daemon,
  netcat-openbsd | netcat | socat,
- openssh-client,
  ssh-askpass,
 Suggests:
  monkeysphere-validation-agent,
