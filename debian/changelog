@@ -1,3 +1,28 @@
+monkeysphere (0.43-1) unstable; urgency=medium
+
+  * New upstream release
+
+  [ Sunil Mohan Adapa ]
+  * Improvements in TMPDIR handling (Closes: #656750, #911907)
+  * Remove shell for monkeysphere user (Closes: #901489)
+
+  [ Daniel Kahn Gillmor ]
+  * Avoid paranoid accidental lockout (Closes: #897366)
+  * Better error reporting for pem2openpgp (Closes: #906755)
+  * Bump standards-version to 4.3.0 (no changes needed)
+  * Move to debhelper 12
+  * Use https for upstream links
+  * Use https for wiki.debian.org
+  * d/control: use ${perl:Depends} for monkeysphere
+  * d/control: document versioned GnuPG dependency from upstream
+  * d/control: explicitly depend on openssh-client for ssh-keygen
+  * Note RSA and Ed25519 keys in agent-transfer description
+  * Tell debhelper where examples come from
+  * Avoid dh_missing reporting Changelog as "not installed"
+  * use dh_missing --fail-missing
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 23 Jan 2019 17:44:36 -0500
+
 monkeysphere (0.42-2) unstable; urgency=medium
 
   * added cpio as a requirement for the basic autopkgtest
