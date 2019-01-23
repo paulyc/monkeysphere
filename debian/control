@@ -36,6 +36,7 @@ Depends:
  libdigest-sha-perl,
  lockfile-progs | procmail,
  ${misc:Depends},
+ ${perl:Depends},
 Recommends:
  agent-transfer,
  cron-daemon,
