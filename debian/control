@@ -73,10 +73,10 @@ Enhances:
  openssh-client,
  openssh-server,
 Description: copy a secret key from GnuPG's gpg-agent to OpenSSH's ssh-agent
- agent-transfer is a simple utility to extract a secret key from
- GnuPG's gpg-agent and send it to a running ssh-agent.  This is useful
- for those who prefer the runtime semantics and behavior of OpenSSH's
- ssh-agent, but whose secret keys are held in long-term storage by
- GnuPG's gpg-agent.
+ agent-transfer is a simple utility to extract a secret RSA or Ed25519
+ key from GnuPG's gpg-agent and send it to a running ssh-agent.  This
+ is useful for those who prefer the runtime semantics and behavior of
+ OpenSSH's ssh-agent, but whose secret keys are held in long-term
+ storage by GnuPG's gpg-agent.
  .
  This tool comes from the monkeysphere project.
