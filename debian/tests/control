@@ -4,3 +4,6 @@ Restrictions: allow-stderr
 
 Test-Command: MONKEYSPHERE_TEST_USE_SYSTEM=true MONKEYSPHERE_TEST_NO_EXAMINE=true tests/basic
 Depends: @, openssh-server, openssl, socat, cpio
+
+Test-Command: MONKEYSPHERE_TEST_USE_SYSTEM=true MONKEYSPHERE_TEST_NO_EXAMINE=true MONKEYSPHERE_TEST_USE_ED25519=true tests/basic
+Depends: @, openssh-server, openssl, socat, cpio
