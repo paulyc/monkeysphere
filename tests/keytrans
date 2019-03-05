@@ -7,7 +7,7 @@
 #   Jameson Rollins <jrollins@fifthhorseman.net>
 #   Micah Anderson <micah@riseup.net> 
 #
-# Copyright: 2008-2009
+# Copyright: 2008-2019
 # License: GPL v3 or later
 
 # these tests should all be able to run as a non-privileged user.
@@ -16,6 +16,14 @@
 set -e
 # piped commands should return the code of the first non-zero return
 set -o pipefail
+
+declare -a child_procs=($(ps -o pid h --ppid $$))
+if [ "${#child_procs[@]}" -gt 1 ]; then
+    printf 'found %d pre-existing child processes: %s\n' "${#child_procs[@]}" "${child_procs[*]}"
+    printf "spawning my own subprocess to avoid https://bugs.debian.org/920038...\n"
+    "$0" "$@"
+    exit
+fi
 
 # make sure the TESTDIR is an absolute path, not a relative one.
 export TESTDIR=$(cd $(dirname "$0") && pwd)
