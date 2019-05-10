@@ -1,0 +1,32 @@
+From: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+Date: Fri, 10 May 2019 12:15:00 -0400
+Subject: tests/basic: ensure functionality with output of standard OpenSSH
+ keygen
+
+Our "fix" to https://bugs.debian.org/909700 in
+d8fc9f284fc9a128a174b16ad19e866f1c00bc27 just avoided testing the
+actual typical default output of ssh-keygen.
+
+While this was fair to do in tests/keytrans, where it is exercised on
+pem2openpgp (which is explicitly defined as only accepting PEM input),
+this is inappropriate for testing monkeysphere in general.
+
+So now, the test suite breaks again, but we need to provide a proper
+fix.
+---
+ tests/basic | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/basic b/tests/basic
+index d5c4692..72a79a6 100755
+--- a/tests/basic
++++ b/tests/basic
+@@ -275,7 +275,7 @@ fi
+ echo
+ echo "##################################################"
+ echo "### import host key..."
+-ssh-keygen -m PEM -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_rsa_key
++ssh-keygen -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_rsa_key
+ monkeysphere-host import-key "$TEMPDIR"/ssh_host_rsa_key ssh://testhost.example
+ 
+ echo
