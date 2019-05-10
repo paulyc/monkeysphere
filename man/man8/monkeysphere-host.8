@@ -27,9 +27,10 @@ be omitted, and \fBmonkeysphere\-host\fP will operate on it.
 \fBmonkeysphere\-host\fP takes various subcommands:
 .TP
 .B import\-key FILE SCHEME://HOSTNAME[:PORT]
-Import a PEM\-encoded host secret key from file FILE.  If FILE is
-`\-', then the key will be imported from stdin.  Only RSA keys are
-supported at the moment.  SCHEME://HOSTNAME[:PORT] is used to specify
+Import an SSH host secret key from file FILE.  If FILE is
+`\-', then the key will be imported from stdin, and must be an
+RSA key in PEM\-encoded format.
+SCHEME://HOSTNAME[:PORT] is used to specify
 the scheme (e.g. ssh or https), fully\-qualified hostname (and port)
 used in the user ID of the new OpenPGP key (e.g. ssh://example.net or
 https://www.example.net).  If PORT is not specified, then no port is
