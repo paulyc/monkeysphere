@@ -50,10 +50,7 @@ else
 fi
 
 # execute edit-key script
-if gpg_host --export-secret-keys "$keyID" | \
-    PEM2OPENPGP_USAGE_FLAGS=authenticate \
-    "$SYSSHAREDIR/keytrans" adduserid "$keyID" "$serviceName" \
-    | gpg_host --import ; then
+if gpg_host --quick-add-uid "$keyID" "$serviceName" ; then
 
     gpg_host --check-trustdb
 
