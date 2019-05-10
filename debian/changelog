@@ -1,3 +1,10 @@
+monkeysphere (0.43-3) unstable; urgency=medium
+
+  * fix monkeysphere-host import-key (Closes: #909700)
+  * update GnuPG dependency
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Fri, 10 May 2019 16:55:04 -0400
+
 monkeysphere (0.43-2) unstable; urgency=medium
 
   * Autopkgtest should cover Ed25519 as well
