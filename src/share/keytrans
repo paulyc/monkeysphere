@@ -854,23 +854,6 @@ sub findkeyfprs {
   }
 };
 
-sub getallprimarykeys {
-  my $instr = shift;
-
-  my $subs = { $packet_types->{pubkey} => \&findkeyfprs,
-               $packet_types->{seckey} => \&findkeyfprs,
-	     };
-  my $data = {target => { } };
-
-  packetwalk($instr, $subs, $data);
-
-  if (defined $data->{keys}) {
-    return $data->{keys};
-  } else {
-    return {};
-  }
-}
-
 sub packetwalk {
   my $instr = shift;
   my $subs = shift;
@@ -1031,13 +1014,7 @@ for (basename($0)) {
     # UNDOCUMENTED, and WILL NOT BE MAINTAINED.
     my $subcommand = shift;
     for ($subcommand) {
-      if (/^listfprs$/) {
-        my $instream;
-	open($instream,'-');
-	binmode($instream, ":bytes");
-        my $keys = getallprimarykeys($instream);
-        printf("%s\n", join("\n", map { uc(unpack('H*', $_)) } keys(%{$keys})));
-      } elsif (/^sshfpr$/) {
+      if (/^sshfpr$/) {
         use MIME::Base64;
         while (<STDIN>) {
           my ($dummy,$b64keyblob) = split(/ /, $_);

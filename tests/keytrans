@@ -145,7 +145,7 @@ PEM2OPENPGP_USAGE_FLAGS=authenticate,certify \
 PEM2OPENPGP_TIMESTAMP="$(( $timestamp + 1 ))" pem2openpgp fubar \
  < "$TEMPDIR"/newkey > "$TEMPDIR"/newkey.gpg
 
-NEWKEYFPR=$(< "$TEMPDIR"/newkey.gpg keytrans listfprs)
+NEWKEYFPR=$(< "$TEMPDIR"/newkey.gpg gpg --with-colons --import-options import-show --dry-run --import | awk -F: '/^fpr:/{ print $10 }' )
 NEWKEYID=$( printf "%s" "$NEWKEYFPR" | cut -b25-40)
 
 < "$TEMPDIR"/newkey.gpg gpg --import 
@@ -165,14 +165,6 @@ EOF
 
 echo "test: diff expected gpg list output"
 diff -u "$TEMPDIR"/expectedout <(gpg --check-sigs --with-colons | grep -vE '^(tru|fpr):' | cut -d: -f1-16 | sed 's/:*$//')
-
-sort >"$TEMPDIR"/expectedout <<EOF
-$KEYFPR
-$NEWKEYFPR
-EOF
-
-echo "test: diff expected keytrans listfpr output"
-diff -u "$TEMPDIR"/expectedout <( gpg --export-secret-keys | keytrans listfprs | sort )
 
 ## FIXME: addtest: not testing subkeys at the moment.
 
