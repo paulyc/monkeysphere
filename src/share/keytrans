@@ -212,24 +212,6 @@ sub simple_checksum {
 }
 
 
-# calculate/print the fingerprint of an openssh-style keyblob:
-
-sub sshfpr {
-  sshfpr_sha256(shift);
-}
-
-sub sshfpr_md5 {
-  my $keyblob = shift;
-  use Digest::MD5;
-  return 'MD5:'.join(':', map({unpack("H*", $_)} split('', Digest::MD5::md5($keyblob))));
-}
-
-sub sshfpr_sha256 {
-  my $keyblob = shift;
-  use Digest::SHA;
-  return 'SHA256:'.Digest::SHA::sha256_base64($keyblob);
-}
-
 # calculate the multiplicative inverse of a mod b this is euclid's
 # extended algorithm.  For more information see:
 # https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm the
@@ -1012,18 +994,7 @@ for (basename($0)) {
   elsif (/^keytrans$/) {
     # subcommands when keytrans is invoked directly are UNSUPPORTED,
     # UNDOCUMENTED, and WILL NOT BE MAINTAINED.
-    my $subcommand = shift;
-    for ($subcommand) {
-      if (/^sshfpr$/) {
-        use MIME::Base64;
-        while (<STDIN>) {
-          my ($dummy,$b64keyblob) = split(/ /, $_);
-          printf("%s\n", sshfpr(decode_base64($b64keyblob)));
-        }
-      } else {
-	die "Unrecognized subcommand.  keytrans subcommands are not a stable interface!\n";
-      }
-    }
+    die "Unrecognized subcommand.  keytrans subcommands are not a stable interface!\n";
   }
   else {
     die "Unrecognized keytrans call.\n";

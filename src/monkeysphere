@@ -279,7 +279,7 @@ case $COMMAND in
     'sshfprs-for-userid')
 	CHECK_KEYSERVER=${MONKEYSPHERE_CHECK_KEYSERVER:=${CHECK_KEYSERVER:="true"}}
 	source "${MSHAREDIR}/keys_for_userid"
-	keys_for_userid "$@" | "$SYSSHAREDIR/keytrans" sshfpr
+	keys_for_userid "$@" | ssh-keygen -l -f - | awk '{ print $2 }'
 	;;
 
     'keys-from-userid')
