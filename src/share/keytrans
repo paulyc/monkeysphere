@@ -1020,22 +1020,6 @@ for (basename($0)) {
           my ($dummy,$b64keyblob) = split(/ /, $_);
           printf("%s\n", sshfpr(decode_base64($b64keyblob)));
         }
-      } elsif (/^openpgp2sshfpr$/) {
-        my $fpr = shift;
-        my $instream;
-        open($instream,'-');
-        binmode($instream, ":bytes");
-        my $key = openpgp2rsa($instream, $fpr);
-        if (defined($key)) {
-          # openssh uses MD5 for key fingerprints:
-          printf("%d %s %s\n",
-                 $key->size() * 8, # size() is in bytes -- we want bits
-                 sshfpr(openssh_pubkey_pack($key)),
-                 '(RSA)', # FIXME when we support other than RSA.
-                );
-        } else {
-          die "No matching key found.\n";
-        }
       } else {
 	die "Unrecognized subcommand.  keytrans subcommands are not a stable interface!\n";
       }
