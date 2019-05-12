@@ -246,8 +246,7 @@ case $COMMAND in
 	;;
 
     'import-subkey'|'import'|'i')
-	source "${MSHAREDIR}/import_subkey"
-	import_subkey "$@"
+        failure "import-subkey is not implemented yet. (see https://dev.gnupg.org/T4489)"
 	;;
 
     'gen-subkey'|'g')
