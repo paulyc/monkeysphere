@@ -69,32 +69,34 @@ key_type_from_file() {
 
 
 if [ "$keyFile" = '-' ] ; then
-    # import PEM-encoded RSA stdin to an OpenPGP private key
-    log verbose "importing PEM-encoded RSA key from stdin..."
-    PEM2OPENPGP_USAGE_FLAGS=authenticate pem2openpgp "$serviceName" \
-	| gpg_host --import
+    # stdin we just assume is RSA, since we don't get a chance to scan it twice:
+    log verbose "importing RSA key from stdin..."
+    keyType=RSA
 else
-    # import some sort of file that OpenSSH's keygen can handle
-    if keyType=$(key_type_from_file "$keyFile"); then
-        # we lock to avoid concurrent interactions with gpg-agent and
-        # the sshcontrol file would be dubious
-        lock create "$GNUPGHOME_HOST/importlock"
-        if test -e "$GNUPGHOME_HOST/sshcontrol" && grep -q '^[0-9A-F]' "$GNUPGHOME_HOST/sshcontrol"; then
-            backupSshControl=$(mktemp "$GNUPGHOME_HOST/sshcontrol.XXXXXXXX")
-            log error "$GNUPGHOME_HOST/sshcontrol already contained a key, backing up to $backupSshControl"
-            mv -f "$GNUPGHOME_HOST/sshcontrol" "$backupSshControl"
-        fi
-        
-        log verbose "importing $keyType key from file '$keyFile'..."
-        if ! { test -e "$GNUPGHOME_HOST/gpg-agent.conf" && grep -Fxq batch "$GNUPGHOME_HOST/gpg-agent.conf" ; }; then
-            echo batch >> "$GNUPGHOME_HOST/gpg-agent.conf"
-            GNUPGHOME="$GNUPGHOME_HOST" gpgconf --reload gpg-agent
-            GNUPGHOME="$GNUPGHOME_HOST" gpgconf --launch gpg-agent
-        fi
-        SSH_AUTH_SOCK=$(GNUPGHOME="$GNUPGHOME_HOST" gpgconf --list-dirs agent-ssh-socket) ssh-add "$keyFile"
-        if keyGrip=$(awk '/^[0-9A-F]/{print $1}' < "$GNUPGHOME_HOST/sshcontrol") &&
-           test -n "$keyGrip" && [ $(wc -l <<<"$keyGrip") -eq 1 ] ; then
-            gpg_host --batch --full-generate-key <<EOF
+    # import some sort of file that OpenSSH's ssh-keygen can handle
+    # if it turns out that ssh-keygen can't handle it, this should fail, and we'll abort.
+    keyType=$(key_type_from_file "$keyFile")
+fi
+
+# we lock to avoid concurrent interactions with gpg-agent and
+# the sshcontrol file would be dubious
+lock create "$GNUPGHOME_HOST/importlock"
+if test -e "$GNUPGHOME_HOST/sshcontrol" && grep -q '^[0-9A-F]' "$GNUPGHOME_HOST/sshcontrol"; then
+    backupSshControl=$(mktemp "$GNUPGHOME_HOST/sshcontrol.XXXXXXXX")
+    log error "$GNUPGHOME_HOST/sshcontrol already contained a key, backing up to $backupSshControl"
+    mv -f "$GNUPGHOME_HOST/sshcontrol" "$backupSshControl"
+fi
+
+log verbose "importing $keyType key from file '$keyFile'..."
+if ! { test -e "$GNUPGHOME_HOST/gpg-agent.conf" && grep -Fxq batch "$GNUPGHOME_HOST/gpg-agent.conf" ; }; then
+    echo batch >> "$GNUPGHOME_HOST/gpg-agent.conf"
+    GNUPGHOME="$GNUPGHOME_HOST" gpgconf --reload gpg-agent
+    GNUPGHOME="$GNUPGHOME_HOST" gpgconf --launch gpg-agent
+fi
+SSH_AUTH_SOCK=$(GNUPGHOME="$GNUPGHOME_HOST" gpgconf --list-dirs agent-ssh-socket) ssh-add "$keyFile"
+if keyGrip=$(awk '/^[0-9A-F]/{print $1}' < "$GNUPGHOME_HOST/sshcontrol") &&
+        test -n "$keyGrip" && [ $(wc -l <<<"$keyGrip") -eq 1 ] ; then
+    gpg_host --batch --full-generate-key <<EOF
 Key-Type: $keyType
 Key-Grip: $keyGrip
 Key-Usage: auth
@@ -102,20 +104,13 @@ Name-Real: $serviceName
 %no-protection
 %commit
 EOF
-        else
-            rm -f "$GNUPGHOME_HOST/sshcontrol"
-            lock remove "$GNUPGHOME_HOST/importlock"
-            failure "did not find a single keygrip in $GNUPGHOME_HOST/sshcontrol during import"
-        fi
-        rm -f "$GNUPGHOME_HOST/sshcontrol"
-        lock remove "$GNUPGHOME_HOST/importlock"
-    else
-        log error "falling back to pem2openpgp (which will probably still fail)..."
-        PEM2OPENPGP_USAGE_FLAGS=authenticate pem2openpgp "$serviceName" \
-	                       <"$keyFile" \
-	    | gpg_host --import
-    fi
+else
+    rm -f "$GNUPGHOME_HOST/sshcontrol"
+    lock remove "$GNUPGHOME_HOST/importlock"
+    failure "did not find a single keygrip in $GNUPGHOME_HOST/sshcontrol during import"
 fi
+rm -f "$GNUPGHOME_HOST/sshcontrol"
+lock remove "$GNUPGHOME_HOST/importlock"
 
 # export to OpenPGP public key to file
 update_pgp_pub_file

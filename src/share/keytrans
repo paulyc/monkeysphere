@@ -36,7 +36,7 @@
 # Example usage:
 
 # gpg --export-secret-subkeys --export-options export-reset-subkey-passwd $KEYID | \
-#  openpgp2ssh $KEYID | ssh-add /dev/stdin
+#  openpgp2ssh $KEYID | ssh-add -
 
 
 # Authors:
