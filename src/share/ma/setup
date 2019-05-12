@@ -70,11 +70,9 @@ EOF
 
 	local CORE_UID=$(printf "Monkeysphere authentication trust core UID (random string: %s)" $(dd if=/dev/urandom bs=21 count=1 2>/dev/null | perl -MMIME::Base64 -ne 'print encode_base64($_)'))
     
-	printf "generating monkeysphere authentication trust core key:\nsize: %d bits\nuid: '%s'\n" "$CORE_KEYLENGTH" "$CORE_UID" | log debug
-	PEM2OPENPGP_USAGE_FLAGS=certify \
-	    PEM2OPENPGP_NEWKEY=$CORE_KEYLENGTH pem2openpgp "$CORE_UID" \
-	    | gpg_core --import \
-	    || failure "Could not import new key for Monkeysphere authentication trust core"
+	printf "generating monkeysphere authentication trust core RSA key:\nsize: %d bits\nuid: '%s'\n" "$CORE_KEYLENGTH" "$CORE_UID" | log debug
+        gpg_core --pinentry-mode=loopback --passphrase '' --quick-generate-key "$CORE_UID" "rsa$CORE_KEYLENGTH" cert \
+            || failure "Could not import new key for Monkeysphere authentication trust core"
 
 	# get fingerprint of core key.  should definitely not be empty at this point
 	CORE_FPR=$(core_fingerprint)
