@@ -255,7 +255,7 @@ echo "### configuring sshd..."
 cp "$TESTDIR"/etc/ssh/sshd_config "$SSHD_CONFIG"
 # write the sshd_config
 cat <<EOF >> "$SSHD_CONFIG"
-HostKey ${MONKEYSPHERE_SYSDATADIR}/ssh_host_rsa_key
+HostKey ${MONKEYSPHERE_SYSDATADIR}/ssh_host_key
 AuthorizedKeysFile ${MONKEYSPHERE_SYSDATADIR}/authorized_keys/%u
 EOF
 
@@ -275,8 +275,12 @@ fi
 echo
 echo "##################################################"
 echo "### import host key..."
-ssh-keygen -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_rsa_key
-monkeysphere-host import-key "$TEMPDIR"/ssh_host_rsa_key ssh://testhost.example
+if [ "$MONKEYSPHERE_TEST_USE_ED25519" = true ]; then
+    ssh-keygen -t ed25519 -N '' -f "$TEMPDIR"/ssh_host_key
+else
+    ssh-keygen -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_key
+fi
+monkeysphere-host import-key "$TEMPDIR"/ssh_host_key ssh://testhost.example
 
 echo
 echo "##################################################"
@@ -377,7 +381,7 @@ monkeysphere-authentication update-users $(whoami)
 echo
 echo "##################################################"
 echo "### testing monkeysphere keys-for-userid ..."
-diff <( monkeysphere keys-for-userid ssh://testhost.example ) <( cut -f1,2 -d' ' < "$TEMPDIR"/ssh_host_rsa_key.pub )
+diff <( monkeysphere keys-for-userid ssh://testhost.example ) <( cut -f1,2 -d' ' < "$TEMPDIR"/ssh_host_key.pub )
 
 # connect to test sshd, using monkeysphere ssh-proxycommand to verify
 # the identity before connection.  This should work in both directions!
