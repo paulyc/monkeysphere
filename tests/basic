@@ -32,14 +32,6 @@ source "$TESTDIR"/common
 [ -f /usr/sbin/sshd ] || { echo "You must have sshd installed to run this test." ; exit 1; }
 which socat >/dev/null || { echo "You must have socat installed to run this test." ; exit 1; }
 
-perl -MCrypt::OpenSSL::RSA -e 1 2>/dev/null || { echo "You must have the perl module Crypt::OpenSSL::RSA installed to run this test.  
-On debian-derived systems, you can set this up with:
-  apt-get install libcrypt-openssl-rsa-perl" ; exit 1; }
-
-perl -MDigest::SHA -e 1 2>/dev/null || { echo "You must have the perl module Digest::SHA installed to run this test.  
-On debian-derived systems, you can set this up with:
-  apt-get install libdigest-sha-perl" ; exit 1; }
-
 ## FIXME: other checks?
 
 ######################################################################

@@ -21,7 +21,6 @@ Monkeysphere depends on:
 
  * GnuPG >= 2.1.17
  * Perl
- * Perl's Crypt::OpenSSL::RSA module
  * lockfile-progs or procmail's lockfile
  * Bash
  * OpenSSH's ssh-keygen utility (>= 6.0)
