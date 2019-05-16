@@ -131,11 +131,15 @@ check_service_name() {
     [ -n "$name" ] || \
         failure "You must supply a service name to check"
 
-    printf '%s' "$name" | perl -n -e '($str = $_) =~ s/\s//g ; exit !(lc($str) eq $_);' || \
+    [[ "$name" = "${name,,}" ]] || \
         failure "Not a valid service name: '$name'
 
-Service names should be canonicalized to all lower-case,
-with no whitespace"
+Service names should be canonicalized to all lower-case."
+
+    [[ "$name" = "${name//$' \n\r\t'/}" ]] || \
+        failure "Not a valid service name: '$name'
+
+Service names should not contain whitespace."
 
     [[ "$name" =~ ^[a-z0-9./:-]+$ ]] || \
         failure "Not a valid service name: '$name'
