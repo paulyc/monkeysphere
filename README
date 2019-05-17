@@ -20,6 +20,7 @@ Dependencies
 Monkeysphere depends on:
 
  * GnuPG >= 2.1.17
+ * find (POSIX or GNU should both work)
  * Perl
  * lockfile-progs or procmail's lockfile
  * Bash

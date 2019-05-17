@@ -417,6 +417,43 @@ touch_key_file_or_fail() {
     fi
 }
 
+check_perms() {
+    local username="$1"
+    local pathname="$2"
+
+    if [ -z "$username" ]; then
+        log error 'missing username'
+        return 1
+    fi
+    if [ -z "$pathname" ]; then
+        log error 'missing pathname'
+        return 1
+    fi
+    if ! [[ "$pathname" =~ ^/ ]]; then
+        log error 'pathname must be absolute (did not start with a /)'
+        return 1
+    fi
+
+    local homedir=$(realpath "$(get_homedir "$username")")
+    local cur=$(realpath "$pathname")
+    local -a paths=("$cur")
+    while [ "$cur" != "/" ] && [ "$cur" != "$homedir" ]; do
+        cur="${cur%/*}"
+        if [ -z "$cur" ]; then
+            cur=/
+        fi
+        paths+=("$cur")
+    done
+
+    log debug "$(printf 'checking permissions on %s\n' "${paths[@]}")"
+    local trouble=$(find "${paths[@]}" -maxdepth 0  \( \! \( -uid 0 -o -user "$username" \) \) -o -perm /go+w)
+    if [ -n "$trouble" ]; then
+        log error "$(printf 'bad ownership or permissions on file(s): %s' "${trouble//$'\n'/, }")"
+        return 1
+    fi
+}
+
+
 # check that a file is properly owned, and that all it's parent
 # directories are not group/other writable
 check_key_file_permissions() {
@@ -431,7 +468,7 @@ check_key_file_permissions() {
 	return 0
     fi
     log debug "checking path permission '$path'..."
-    "${SYSSHAREDIR}/checkperms" "$uname" "$path"
+    check_perms "$uname" "$path"
 }
 
 # return a list of all users on the system
