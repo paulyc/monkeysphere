@@ -24,3 +24,4 @@ Monkeysphere depends on:
  * lockfile-progs or procmail's lockfile
  * Bash
  * OpenSSH's ssh-keygen utility (>= 6.0)
+ * base64 (coreutils or fourmilab)
