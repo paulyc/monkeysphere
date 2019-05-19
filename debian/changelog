@@ -1,3 +1,11 @@
+monkeysphere (0.44-1) experimental; urgency=medium
+
+  * new upstream version to experimental
+  * avoids use of perl, but still ships perl-based key translation
+    utilities for now
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sun, 19 May 2019 19:06:45 -0400
+
 monkeysphere (0.43-3) unstable; urgency=medium
 
   * fix monkeysphere-host import-key (Closes: #909700)
