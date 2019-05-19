@@ -101,7 +101,7 @@ char* gpg_agent_sockname () {
   size_t bytecount, pos;
   char buf[BUFSIZE];
 
-  f = popen("gpgconf --list-dirs | grep ^agent-socket: | cut -f2 -d:", "r");
+  f = popen("gpgconf --list-dirs agent-socket", "r");
   if (!f)
     return NULL;
   pos = 0;
