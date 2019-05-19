@@ -102,7 +102,7 @@ installman: $(REPLACED_COMPRESSED_MANPAGES)
 # this target depends on you having the monkeysphere-docs
 # repo checked out as a peer of your monkeysphere repo.
 releasenote:
-	../monkeysphere-docs/utils/build-releasenote
+	../monkeysphere-docs/util/build-releasenote
 
 test: test-keytrans test-basic test-ed25519
 
