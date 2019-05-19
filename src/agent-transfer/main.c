@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <pwd.h>
 #include <gcrypt.h>
 #include <ctype.h>
@@ -100,20 +101,66 @@ char* gpg_agent_sockname () {
   FILE *f;
   size_t bytecount, pos;
   char buf[BUFSIZE];
+  int pipefd[2], wstatus;
+  pid_t pid, waited = 0;
 
-  f = popen("gpgconf --list-dirs agent-socket", "r");
-  if (!f)
+  if (pipe(pipefd)) {
+    fprintf (stderr, "Could not pipe (%d) %s\n", errno, strerror (errno));
     return NULL;
+  }
+  pid = fork();
+  if (pid == 0) {
+    if (dup2 (pipefd[1], 1) == -1) {
+      fprintf (stderr, "failed to dup2 (%d) %s", errno, strerror (errno));
+      exit (1);
+    }
+    close (pipefd[0]);
+    /* FIXME: should we close other open file descriptors? gpgconf is
+       supposed to do that for us, but if we wanted to be defensive we
+       might want to do it here too. */
+    if (execlp ("gpgconf", "gpgconf", "--list-dirs", "agent-socket", NULL)) {
+      fprintf (stderr, "failed to execl (%d) %s", errno, strerror (errno));
+      exit (1);
+    }
+  }
+  close (pipefd[1]);
+  waited = waitpid (pid, &wstatus, 0);
+  if (waited != pid) {
+    fprintf (stderr, "waitpid failed (%d) %s\n", errno, strerror (errno));
+    close (pipefd[0]);
+    return NULL;
+  }
+  if (!WIFEXITED(wstatus)) {
+    fprintf (stderr, "'gpgconf --list-dirs agent-socket' did not exit cleanly!\n");
+    close (pipefd[0]);
+    return NULL;
+  }
+  if (WEXITSTATUS(wstatus)) {
+    fprintf (stderr, "'gpgconf --list-dirs agent-socket' exited with non-zero return code %d\n", WEXITSTATUS(wstatus));
+    close (pipefd[0]);
+    return NULL;
+  }
+  f = fdopen (pipefd[0], "r");
+  if (f == NULL) {
+    fprintf (stderr, "failed to get readable pipe (%d) %s\n", errno, strerror (errno));
+    close (pipefd[0]);
+    return NULL;
+  }
   pos = 0;
   while (!feof(f))
     {
       bytecount = fread(buf + pos, 1, sizeof(buf) - pos, f);
-      if (ferror(f))
+      if (ferror(f)) {
+        fclose (f);
         return NULL;
+      }
       pos += bytecount;
-      if (pos >= sizeof(buf)) /* too much data! */
+      if (pos >= sizeof(buf)) {/* too much data! */
+        fclose (f);
         return NULL;
+      }
     }
+  fclose (f);
   buf[pos] = '\0';
   return trim_and_unescape(buf);
 }
@@ -706,6 +753,10 @@ int main (int argc, const char* argv[]) {
     return 1;
   }
   gpg_agent_socket = gpg_agent_sockname();
+  if (gpg_agent_socket == NULL) {
+    fprintf (stderr, "failed to get gpg-agent socket name!\n");
+    return 1;
+  }
   
   /* launch gpg-agent if it is not already connected */
   err = assuan_socket_connect (e.ctx, gpg_agent_socket,
