@@ -1,3 +1,17 @@
+monkeysphere (0.44) unstable; urgency=medium
+
+  * Drop all direct use of perl (for now, we still ship
+    keytrans/openpgp2ssh/ssh2openpgp/pem2openpgp for others who
+    want it.  It will be removed in a future version, though)
+  * Use gpg's --quick-* interface (Increase GnuPG dependency
+    to >= 2.1.17, where this interface was stabilized)
+  * Drop unused keytrans subcommands
+  * Avoid risky uses of chown
+  * monkeysphere-host import can now handle ed25519 host keys
+  * Avoid a shell invocation in agent-transfer
+
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Sun, 19 May 2019 19:03:04 -0400
+
 monkeysphere (0.43) unstable; urgency=medium
 
   * Depend on a modern version of GnuPG (>= 2.1.11) for --export-ssh-key
@@ -13,7 +27,7 @@ monkeysphere (0.43) unstable; urgency=medium
   * Avoid locking out users unnecessarily
     (Closes: #897366)
 
-  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 23 Jan 2019 17:42:19 -0500
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Wed, 23 Jan 2019 17:42:19 -0500
 
 monkeysphere (0.42) unstable; urgency=medium
 
@@ -29,7 +43,7 @@ monkeysphere (0.42) unstable; urgency=medium
   * use generic compiler (closes: #883015)
   * make print_date_from_seconds_since_the_epoch deal better with bad input
 
-  -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 16 Oct 2018 11:38:39 -0400
+ -- Daniel Kahn Gillmor <dkg@fifthhorseman.net>  Tue, 16 Oct 2018 11:38:39 -0400
 
 monkeysphere (0.41) unstable; urgency=medium
 

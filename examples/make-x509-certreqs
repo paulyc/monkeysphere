@@ -13,7 +13,7 @@
 
 # This script uses bashisms
 
-# It currently needs OpenSSL binaries to work properly
+# It currently needs OpenSSL binaries, gpg, and gpgsm to work properly
 
 # It assumes that the monkeysphere-host keyring is in
 # /var/lib/monkeysphere/host (which it is on debian)
@@ -67,23 +67,40 @@ EOF
 }
 
 gencertreq() {
-    keyid="$1"
+    local keyid="$1"
     
-    timestamp=$(gpg --fixed-list-mode --with-colons --list-keys "0x$keyid!" | grep ^pub: | cut -f6 -d:)
+    # It would be great to be able to do all of this with gpgsm
+    # directly.  See https://dev.gnupg.org/T4503 for why we need to
+    # use OpenSSL for now.
+
+    local timestamp=$(gpg --fixed-list-mode --with-colons --list-keys "0x$keyid!" | awk -F: '/^pub:/{ print $6 }')
+    local keygrip=$(gpg --fixed-list-mode --with-keygrip --with-colons --list-keys "0x$keyid!" | awk -F: '/^grp:/{ print $10 }')
     
-    san=''
-    primary=''
+    local primary
 # find all the $proto-using User IDs:
-    uids=$(gpg --fixed-list-mode --with-colons --list-keys "0x$keyid!" | \
+    local uids=$(gpg --fixed-list-mode --with-colons --list-keys \&"$keygrip" | \
         grep '^uid:' | cut -f10 -d: | \
         grep '^'"${proto}"'\\x3a//' | \
         sed -r -e 's!^'"${proto}"'\\x3a//!!' -e 's!:[0-9]+$!!')
     primary=$(printf "%s" "$uids" | head -n1)
-    
+
+    # does gpgsm know about this key?
+    if ! gpgsm --with-colons --with-keygrip --list-keys \&"$keygrip" | grep -q ^grp: ; then
+        # ensure that gpgsm has a dummy self-signed cert; otherwise, it
+        # cannot emit the secret key in the necessary form.
+        local batchcmd="Key-Type: RSA
+Key-Grip: $keygrip
+Name-DN: CN=$primary (monkeysphere dummy self-signed)
+Serial: $keygrip
+%commit"
+        local dummycert="$(gpgsm --armor --batch --generate-key <<<"$batchcmd")"
+        gpgsm --import <<<"$dummycert"
+   fi
+
     printf "Certificate Request for TLS WWW server %s\n[OpenPGP key %s]\n" "$primary" "$keyid"
     openssl req -text -new \
         -config <(get_openssl_config "$timestamp" "$uids") \
-        -key <(gpg --export-secret-key "$keyid" | openpgp2ssh "$keyid") \
+        -key <(gpgsm --armor --export-secret-key-raw \&"$keygrip") \
         -subj "/CN=${primary}/"
 }
 

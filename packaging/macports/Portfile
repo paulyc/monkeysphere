@@ -56,8 +56,7 @@ post-build {
 
     # fix perl shebang line to point to macports perl install
     exec sed -i .tmp -e "s|^#!/usr/bin/perl -T$|#!/opt/local/bin/perl -T|" \
-        ${worksrcpath}/src/share/keytrans \
-        ${worksrcpath}/src/share/checkperms
+        ${worksrcpath}/src/share/keytrans
 
     # remove leftover sed cruft
     exec find ${worksrcpath} -name *.tmp -delete

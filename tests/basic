@@ -32,14 +32,6 @@ source "$TESTDIR"/common
 [ -f /usr/sbin/sshd ] || { echo "You must have sshd installed to run this test." ; exit 1; }
 which socat >/dev/null || { echo "You must have socat installed to run this test." ; exit 1; }
 
-perl -MCrypt::OpenSSL::RSA -e 1 2>/dev/null || { echo "You must have the perl module Crypt::OpenSSL::RSA installed to run this test.  
-On debian-derived systems, you can set this up with:
-  apt-get install libcrypt-openssl-rsa-perl" ; exit 1; }
-
-perl -MDigest::SHA -e 1 2>/dev/null || { echo "You must have the perl module Digest::SHA installed to run this test.  
-On debian-derived systems, you can set this up with:
-  apt-get install libdigest-sha-perl" ; exit 1; }
-
 ## FIXME: other checks?
 
 ######################################################################
@@ -87,6 +79,7 @@ ssh_test() {
 	return 0
     else
 	echo "##### ssh connection test FAILED. returned: $RETURN, expected: $CODE"
+        cat "$TEMPDIR/sshd.log"
 	return 1
     fi
 }
@@ -172,7 +165,7 @@ export DISPLAY=monkeys
 
 ## we cannot do proper directory permissions checking if the current
 ## working directory has unsatisfactory permissions:
-if "$MONKEYSPHERE_SYSSHAREDIR"/checkperms $(whoami) "$TEMPDIR"; then 
+if bash -c "$(printf 'source %q/common  && check_perms %q %q' "$MONKEYSPHERE_SYSSHAREDIR" "$(whoami)" "$TEMPDIR")"; then 
     echo "Permissions on temporary directory '$TEMPDIR' are OK for permissions checks."
     TEMPDIR_PERMISSIONS_SAFE=yes
 else
@@ -254,7 +247,7 @@ echo "### configuring sshd..."
 cp "$TESTDIR"/etc/ssh/sshd_config "$SSHD_CONFIG"
 # write the sshd_config
 cat <<EOF >> "$SSHD_CONFIG"
-HostKey ${MONKEYSPHERE_SYSDATADIR}/ssh_host_rsa_key
+HostKey ${MONKEYSPHERE_SYSDATADIR}/ssh_host_key
 AuthorizedKeysFile ${MONKEYSPHERE_SYSDATADIR}/authorized_keys/%u
 EOF
 
@@ -274,8 +267,12 @@ fi
 echo
 echo "##################################################"
 echo "### import host key..."
-ssh-keygen -m PEM -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_rsa_key
-monkeysphere-host import-key "$TEMPDIR"/ssh_host_rsa_key ssh://testhost.example
+if [ "$MONKEYSPHERE_TEST_USE_ED25519" = true ]; then
+    ssh-keygen -t ed25519 -N '' -f "$TEMPDIR"/ssh_host_key
+else
+    ssh-keygen -b 3072 -t rsa -N '' -f "$TEMPDIR"/ssh_host_key
+fi
+monkeysphere-host import-key "$TEMPDIR"/ssh_host_key ssh://testhost.example
 
 echo
 echo "##################################################"
@@ -343,7 +340,7 @@ if [ "$MONKEYSPHERE_TEST_USE_ED25519" = true ]; then
     echo "### generating ed25519 key for testuser..."
     # from the imported secret key
     USER_FPR=8A4B353B4CBA6F30625498BAE00B5EEEBA79B482
-    gpg --quick-add-key "$USER_FPR" ed25519 auth 2d
+    gpg --batch --no-tty --quick-add-key "$USER_FPR" ed25519 auth 2d
 else
     echo "### generating standard monkeysphere key for testuser..."
     monkeysphere gen-subkey
@@ -376,7 +373,7 @@ monkeysphere-authentication update-users $(whoami)
 echo
 echo "##################################################"
 echo "### testing monkeysphere keys-for-userid ..."
-diff <( monkeysphere keys-for-userid ssh://testhost.example ) <( cut -f1,2 -d' ' < "$TEMPDIR"/ssh_host_rsa_key.pub )
+diff <( monkeysphere keys-for-userid ssh://testhost.example ) <( cut -f1,2 -d' ' < "$TEMPDIR"/ssh_host_key.pub )
 
 # connect to test sshd, using monkeysphere ssh-proxycommand to verify
 # the identity before connection.  This should work in both directions!

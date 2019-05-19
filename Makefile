@@ -73,7 +73,6 @@ install: all installman
 	install src/monkeysphere-authentication-keys-for-user $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 src/share/common $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0644 replaced/src/share/defaultenv $(DESTDIR)$(PREFIX)/share/monkeysphere
-	install -m 0755 src/share/checkperms $(DESTDIR)$(PREFIX)/share/monkeysphere
 	install -m 0755 src/share/keytrans $(DESTDIR)$(PREFIX)/share/monkeysphere
 	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/pem2openpgp
 	ln -sf ../share/monkeysphere/keytrans $(DESTDIR)$(PREFIX)/bin/openpgp2ssh

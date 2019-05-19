@@ -60,13 +60,11 @@ for uname in $unames ; do
 
      # create temporary authorized_keys file
     tmpAuthorizedKeys="${TMPLOC}/authorized_keys"
-    touch -- "$tmpAuthorizedKeys"
 
     # set restrictive permissions on the temporary files
-    # FIXME: is there a better way to do this?
     chmod 0700 -- "$TMPLOC"
-    chmod 0600 -- "$tmpAuthorizedKeys"
-    chown -R "$MONKEYSPHERE_USER" -- "$TMPLOC"
+    chown --no-dereference "$MONKEYSPHERE_USER" -- "$TMPLOC"
+    run_as_monkeysphere_user sh -c "$(printf 'umask 077 && touch -- %q' "$tmpAuthorizedKeys")"
 
     # process authorized_user_ids file
     log debug "checking for authorized_user_ids..."

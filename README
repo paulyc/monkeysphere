@@ -19,9 +19,10 @@ Dependencies
 
 Monkeysphere depends on:
 
- * GnuPG >= 2.1.11
+ * GnuPG >= 2.1.17
+ * find (POSIX or GNU should both work)
  * Perl
- * Perl's Crypt::OpenSSL::RSA module
  * lockfile-progs or procmail's lockfile
  * Bash
- * OpenSSH's ssh-keygen utility (ideally >= 6.0)
+ * OpenSSH's ssh-keygen utility (>= 6.0)
+ * base64 (coreutils or fourmilab)
